@@ -13,7 +13,7 @@
         delta1=0~2Hz，delta2=2~4Hz，delta=0~4Hz
         theta=4~8Hz
         alpha=8~13Hz
-        beta1=13~12Hz，beta2=12~30Hz，beta=13~30Hz
+        beta1=13~20Hz，beta2=20~30Hz，beta=13~30Hz
         gamma=30~80Hz
         
     特征：
