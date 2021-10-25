@@ -8,3 +8,9 @@
 @Description :   
 """
 
+import mne
+
+
+class EDFReader:
+    def __init__(self, file_name):
+        self.raw = mne.io.read_raw_edf(file_name)

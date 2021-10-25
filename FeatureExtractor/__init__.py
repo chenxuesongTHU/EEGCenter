@@ -8,6 +8,13 @@
 @Description :   
 """
 
+from .de import DifferentialEntropy
+from .psd import PowerSpectralDensity
+from .ae import ApproximateEntropy
+from .se import SampleEntropy
+from .pe import PermutationEntropy
+from .lzc import LZComplexity
+
 '''
     频率划分方法：
         delta1=0~2Hz，delta2=2~4Hz，delta=0~4Hz
@@ -17,13 +24,10 @@
         gamma=30~80Hz
         
     特征：
-        差分熵
+        差分熵, Differential Entropy, de
         功率谱密度, Power Spectral Density, psd
-        近似熵app，
-        样本熵SampEn ，
-        排列熵PmEn ，
-        LZ复杂度lzc
+        近似熵, Approximate Entropy, ae
+        样本熵, Sample Entropy, se
+        排列熵, Permutation Entropy, pe
+        LZ复杂度, LZ Complexity, lzc
 '''
-# TODO:
-#  shuqi: 把这个地方以"中文名, 英文名, 缩写"的形式完善下，
-#  每个特征对应一个class，每个class下支持不同窗口时长的特征提取

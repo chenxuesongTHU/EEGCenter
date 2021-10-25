@@ -8,3 +8,4 @@
 @Description :   
 """
 
+from .EDFReader import EDFReader
