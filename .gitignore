@@ -6,3 +6,4 @@
 /data/raw/*
 
 /.DS_Store
+*.pyc

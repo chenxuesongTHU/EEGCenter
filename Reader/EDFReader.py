@@ -13,4 +13,8 @@ import mne
 
 class EDFReader:
     def __init__(self, file_name):
-        self.raw = mne.io.read_raw_edf(file_name)
+        self.__raw = mne.io.read_raw_edf(file_name)
+
+    @property
+    def raw(self):
+        return self.__raw
