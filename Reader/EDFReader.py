@@ -12,8 +12,9 @@ import mne
 
 
 class EDFReader:
-    def __init__(self, file_name):
+    def __init__(self, file_name, annotation_file):
         self.__raw = mne.io.read_raw_edf(file_name)
+        self.__anno = mne.read_annotations(annotation_file)
 
     @property
     def raw(self):

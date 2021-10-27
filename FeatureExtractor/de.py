@@ -1,14 +1,6 @@
 from mne.time_frequency import psd_welch
 import numpy as np
-
-FREQ_BANDS = {
-    "delta": [0.5, 4],  # 1-3
-    "theta": [4, 8],  # 4-7
-    "alpha": [8, 13],  # 8-12
-    "beta": [13, 31],  # 13-30
-    "gamma": [31, 81]  # 31-80
-}
-
+from .constants import *
 
 class DifferentialEntropy:
     def __init__(self, raw):
