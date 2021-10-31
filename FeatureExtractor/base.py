@@ -8,6 +8,8 @@
 @Description :   
 """
 
+__all__ = ["FREQ_BANDS", "BaseFeature"]
+
 FREQ_BANDS = {
     "delta": [0.5, 4],  # 1-3
     "theta": [4, 8],  # 4-7
@@ -16,3 +18,7 @@ FREQ_BANDS = {
     "gamma": [31, 81]  # 31-80
 }
 
+
+class BaseFeature:
+    def __init__(self, raw):
+        self._raw = raw

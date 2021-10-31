@@ -9,13 +9,12 @@
 """
 
 import mne
+from .base import BaseReader
 
 
-class EDFReader:
-    def __init__(self, file_name, annotation_file):
-        self.__raw = mne.io.read_raw_edf(file_name)
-        self.__anno = mne.read_annotations(annotation_file)
-
-    @property
-    def raw(self):
-        return self.__raw
+class EDFReader(BaseReader):
+    def __init__(self, file_name, annotation_file=None):
+        BaseReader.__init__(self, file_name, annotation_file)
+        self._raw = mne.io.read_raw_edf(self._file_name)
+        if self._anno_file:
+            self._anno = mne.read_annotations(self._anno_file)

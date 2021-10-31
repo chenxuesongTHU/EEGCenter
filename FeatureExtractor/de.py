@@ -1,6 +1,6 @@
 from mne.time_frequency import psd_welch
 import numpy as np
-from .constants import *
+from .base import *
 
 class DifferentialEntropy:
     def __init__(self, raw):

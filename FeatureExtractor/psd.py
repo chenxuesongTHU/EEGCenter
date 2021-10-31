@@ -1,13 +1,13 @@
 from mne.time_frequency import psd_welch
 import numpy as np
-from .constants import *
+from .base import *
 
 
-class PowerSpectralDensity:
+class PowerSpectralDensity(BaseFeature):
     def __init__(self, raw):
-        self.raw = raw
+        BaseFeature.__init__(self, raw)
 
-        psds, freqs = psd_welch(self.raw, picks='eeg', fmin=0.5, fmax=80.)
+        psds, freqs = psd_welch(self._raw, picks='eeg', fmin=0.5, fmax=80.)
         psds /= np.sum(psds, axis=-1, keepdims=True)
         psd_feat_list = []  # PSD features
 
