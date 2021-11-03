@@ -1,8 +1,9 @@
+/.idea
 /.idea/*
 
 /main.py
+/data
 /data/*
-#!/data/feats/featsFormat.md
 
 .DS_Store
 *.pyc
