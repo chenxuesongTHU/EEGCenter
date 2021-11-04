@@ -18,3 +18,4 @@ class EDFReader(BaseReader):
         self._raw = mne.io.read_raw_edf(self._file_name)
         if self._anno_file:
             self._anno = mne.read_annotations(self._anno_file)
+            self._raw.set_annotations(self._anno)

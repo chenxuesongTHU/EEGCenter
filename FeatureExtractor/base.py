@@ -1,13 +1,3 @@
-#!/usr/bin/env python
-# -*- encoding: utf-8 -*-
-
-"""
-@File        :   constants  
-@Time        :   2021/10/26 3:20 下午
-@Author      :   Xuesong Chen
-@Description :   
-"""
-
 __all__ = ["FREQ_BANDS", "BaseFeature"]
 
 FREQ_BANDS = {
@@ -22,3 +12,15 @@ FREQ_BANDS = {
 class BaseFeature:
     def __init__(self, raw):
         self._raw = raw
+        self._value = None
+
+    @property
+    def raw(self):
+        return self._raw
+
+    @property
+    def value(self):
+        return self._value
+
+    def save_feature(self, outfile_name):
+        pass
