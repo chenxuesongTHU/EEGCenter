@@ -2,6 +2,7 @@
 
 /main.py
 /data/*
+/tmp/*
 #!/data/feats/featsFormat.md
 
 .DS_Store
