@@ -59,3 +59,8 @@ yasa_feat_list = [
     'eog_sigma_p2min_norm', 'eog_skew', 'eog_skew_c7min_norm', 'eog_skew_p2min_norm', 'eog_std',
     'eog_std_c7min_norm', 'eog_std_p2min_norm', 'eog_theta', 'eog_theta_c7min_norm',
     'eog_theta_p2min_norm', 'time_hour', 'time_norm', 'epoch', 'time']
+
+yasa_ordered_feat_list = [
+    'eog_abspow', 'eeg_petrosian', 'eeg_abspow', # significant top 3
+    'eeg_beta'
+]

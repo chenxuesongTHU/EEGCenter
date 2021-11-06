@@ -8,7 +8,7 @@
 @Description :   
 """
 import matplotlib.patches as mpatches
-import matplotlib.pyplot as plt
+
 import mne
 from mne.datasets.sleep_physionet.age import fetch_data
 
@@ -25,8 +25,10 @@ mapping = {'EOG horizontal': 'eog',
            'Event marker': 'misc'}
 
 
-def get_feature_by_user_id(user_id, feature_name, obs_mins=20, plot=False):
-    [alice_files] = fetch_data(subjects=[user_id], recording=[1])
+def get_feature_by_user_id(user_id, feature_name, days=None, obs_mins=20, plot=False):
+    if days is None:
+        days = [1]
+    [alice_files] = fetch_data(subjects=[user_id], recording=days)
 
     raw_train = mne.io.read_raw_edf(alice_files[0])
     annot_train = mne.read_annotations(alice_files[1])
@@ -58,6 +60,8 @@ def get_feature_by_user_id(user_id, feature_name, obs_mins=20, plot=False):
 
     feat = sls.get_features()
 
+    feat.index *= chunk_duration / 60  # 将index修改为分钟
+
     if not plot:
         return feat[feature_name]
 
@@ -74,17 +78,27 @@ def get_feature_by_user_id(user_id, feature_name, obs_mins=20, plot=False):
             mpatches.Patch(color=color_dic[id], label=stage, alpha=0.5)
         )
 
-    x_ticks = plt.xticks()[0]
-    x_ticks_label = x_ticks * chunk_duration / 60
-    x_ticks_label = [int(x) for x in x_ticks_label]
-    plt.xticks(x_ticks, x_ticks_label)
+    # x_ticks = plt.xticks()[0]
+    # x_ticks_label = x_ticks * chunk_duration / 60
+    # x_ticks_label = [int(x) for x in x_ticks_label]
+    # plt.xticks(x_ticks, x_ticks_label)
 
     plt.legend(handles=patch_list)
     plt.title(feature_name)
     plt.show()
 
-
 # user id in [0, ?]
 ALICE, BOB = 0, 1
+feats = pd.DataFrame()
+for use_idx in range(0, 10):
+    for day_idx in [1, 2]:
+        plot = False
+        tmp = get_feature_by_user_id(
+            use_idx, yasa_ordered_feat_list[0],
+            days=[day_idx], plot=plot, obs_mins=10)
+        if plot == True:
+            continue
+        tmp.name = f'{use_idx}_{day_idx}'
+        feats = pd.concat([feats, tmp], axis=1)
 
-get_feature_by_user_id(ALICE, yasa_feat_list[0], plot=True)
+plot_feat_change(feats)
