@@ -13,3 +13,6 @@ import pandas as pd
 import yasa
 from collections import defaultdict
 import matplotlib.pyplot as plt
+import mne
+
+from .Config import Config

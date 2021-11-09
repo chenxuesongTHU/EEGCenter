@@ -15,6 +15,12 @@ annotation_desc_2_event_id = {'Sleep stage W': 1,
                               'Sleep stage 4': 4,
                               'Sleep stage R': 5}
 
+event_id_2_annotation_desc = {1: 'Sleep stage W',
+                              2: 'Sleep stage 1',
+                              3: 'Sleep stage 2',
+                              4: 'Sleep stage 3',
+                              5: 'Sleep stage R'}
+
 face_color_legend = {
     'W': 1,
     'N1': 2,
@@ -61,6 +67,6 @@ yasa_feat_list = [
     'eog_theta_p2min_norm', 'time_hour', 'time_norm', 'epoch', 'time']
 
 yasa_ordered_feat_list = [
-    'eog_abspow', 'eeg_petrosian', 'eeg_abspow', # significant top 3
+    'eog_abspow', 'eeg_petrosian', 'eeg_abspow',  # significant top 3
     'eeg_beta'
 ]
