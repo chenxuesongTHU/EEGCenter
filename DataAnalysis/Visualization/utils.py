@@ -31,7 +31,7 @@ def plot_stage_span(ax, anno, start_sample_id):
 
 
 
-def plot_feat_change(feats):
+def plot_feat_change(feats, feature_name):
     '''
     将不同用户在同一阶段的脑电特征进行整合绘图
     Parameters
@@ -50,5 +50,7 @@ def plot_feat_change(feats):
         feats_at_time_slots.values - feats_std_at_time_slots.values,
         alpha=0.2)
     feats_at_time_slots.plot(alpha=0.9)
+    plt.xlabel('time (min)')
+    plt.title(feature_name)
     plt.show()
     # plt.plot(feats_at_time_slots.index, y, alpha=0.9)

@@ -8,6 +8,7 @@
 @Description :   
 """
 import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
 
 import mne
 from mne.datasets.sleep_physionet.age import fetch_data
@@ -36,7 +37,7 @@ def get_feature_by_user_id(user_id, feature_name, days=None, obs_mins=20, plot=F
     raw_train.set_annotations(annot_train, emit_warning=False)
     raw_train.set_channel_types(mapping)
 
-    first_w2_index = get_stage_onset(annot_train)
+    first_w2_index = get_stage_onset(annot_train, stage_name="Sleep stage 1")
 
     annot_train.crop(annot_train[first_w2_index]['onset'] - obs_mins * 60,
                      annot_train[first_w2_index]['onset'] + obs_mins * 60)
@@ -82,7 +83,9 @@ def get_feature_by_user_id(user_id, feature_name, days=None, obs_mins=20, plot=F
     # x_ticks_label = x_ticks * chunk_duration / 60
     # x_ticks_label = [int(x) for x in x_ticks_label]
     # plt.xticks(x_ticks, x_ticks_label)
-
+    plt.ylim((1.005, 1.025))
+    # plt.ylim((0, 12000))
+    # plt.ylim((0, 8000))
     plt.legend(handles=patch_list)
     plt.title(feature_name)
     plt.show()
@@ -90,15 +93,16 @@ def get_feature_by_user_id(user_id, feature_name, days=None, obs_mins=20, plot=F
 # user id in [0, ?]
 ALICE, BOB = 0, 1
 feats = pd.DataFrame()
-for use_idx in range(0, 10):
-    for day_idx in [1, 2]:
+for use_idx in range(0, 83):
+    # for day_idx in [1]:
+    for day_idx in [1]:
         plot = False
         tmp = get_feature_by_user_id(
-            use_idx, yasa_ordered_feat_list[0],
+            use_idx, yasa_ordered_feat_list[1],
             days=[day_idx], plot=plot, obs_mins=10)
         if plot == True:
             continue
         tmp.name = f'{use_idx}_{day_idx}'
         feats = pd.concat([feats, tmp], axis=1)
 
-plot_feat_change(feats)
+plot_feat_change(feats, yasa_ordered_feat_list[1])

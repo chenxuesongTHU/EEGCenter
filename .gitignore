@@ -3,6 +3,7 @@
 /main.py
 /data/*
 /tmp/*
+/DatasetInterface/*
 #!/data/feats/featsFormat.md
 
 .DS_Store
