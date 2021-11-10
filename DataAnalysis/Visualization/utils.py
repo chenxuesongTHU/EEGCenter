@@ -52,7 +52,7 @@ def plot_feat_change(feats, feature_name, output_path=None):
     feats_at_time_slots.plot(alpha=0.9)
     plt.xlabel('time (min)')
     plt.title(feature_name)
-    if output:
+    if output_path:
         plt.savefig(f'{output_path}.png')
     else:
         plt.show()
