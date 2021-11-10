@@ -2,10 +2,10 @@
 # -*- encoding: utf-8 -*-
 
 """
-@File        :   constants  
+@File        :   constants
 @Time        :   2021/11/4 7:04 下午
 @Author      :   Xuesong Chen
-@Description :   
+@Description :
 """
 
 annotation_desc_2_event_id = {'Sleep stage W': 1,
@@ -19,7 +19,9 @@ event_id_2_annotation_desc = {1: 'Sleep stage W',
                               2: 'Sleep stage 1',
                               3: 'Sleep stage 2',
                               4: 'Sleep stage 3',
-                              5: 'Sleep stage R'}
+                              5: 'Sleep stage R',
+                              0: 'unknow',
+                              }
 
 face_color_legend = {
     'W': 1,

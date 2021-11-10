@@ -2,10 +2,10 @@
 # -*- encoding: utf-8 -*-
 
 """
-@File        :   utils  
+@File        :   utils
 @Time        :   2021/11/4 7:59 下午
 @Author      :   Xuesong Chen
-@Description :   
+@Description :
 """
 import matplotlib.pyplot as plt
 import numpy as np
@@ -31,7 +31,7 @@ def plot_stage_span(ax, anno, start_sample_id):
 
 
 
-def plot_feat_change(feats, feature_name):
+def plot_feat_change(feats, feature_name, output_path=None):
     '''
     将不同用户在同一阶段的脑电特征进行整合绘图
     Parameters
@@ -52,5 +52,7 @@ def plot_feat_change(feats, feature_name):
     feats_at_time_slots.plot(alpha=0.9)
     plt.xlabel('time (min)')
     plt.title(feature_name)
-    plt.show()
-    # plt.plot(feats_at_time_slots.index, y, alpha=0.9)
+    if output:
+        plt.savefig(f'{output_path}.png')
+    else:
+        plt.show()

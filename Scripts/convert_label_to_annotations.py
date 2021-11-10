@@ -2,10 +2,10 @@
 # -*- encoding: utf-8 -*-
 
 """
-@File        :   gen_annotations  
+@File        :   gen_annotations
 @Time        :   2021/11/9 4:41 下午
 @Author      :   Xuesong Chen
-@Description :   
+@Description :
 """
 from src import *
 import json
@@ -22,7 +22,7 @@ def convert_label_to_annotations(file_name):
     -------
 
     '''
-    file_path = '../DatasetInterface/dreem-learning-evaluation/annotation_result.json'
+    file_path = '../data/annotation_result.json'
     anno_dic = json.load(open(file_path))
     label_list = anno_dic[file_name]
     n_chunk = len(label_list)

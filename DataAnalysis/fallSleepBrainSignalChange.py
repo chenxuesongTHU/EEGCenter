@@ -2,12 +2,15 @@
 # -*- encoding: utf-8 -*-
 
 """
-@File        :   brainSignalChange  
+@File        :   brainSignalChange
 @Time        :   2021/11/4 7:51 下午
 @Author      :   Xuesong Chen
-@Description :   
+@Description :
 """
 import os.path
+import sys
+sys.path.append('.')
+sys.path.append('..')
 
 import matplotlib.patches as mpatches
 from mne.datasets.sleep_physionet.age import fetch_data
@@ -20,7 +23,6 @@ from Reader.EDFReader import EDFReader
 from Scripts import convert_label_to_annotations
 
 
-# physionet
 
 def get_raw_and_annotation(dataset, user_id, days=1):
     raw = None
@@ -33,13 +35,20 @@ def get_raw_and_annotation(dataset, user_id, days=1):
 
     if dataset == 'dodh':
         config = Config()
-        annotation = convert_label_to_annotations(filename_list[0])
-        file = os.path.join(config.get('dataset', 'dodh'), f'{filename_list[0]}.edf')
+        annotation = convert_label_to_annotations(dodh_filename_list[user_id])
+        file = os.path.join(config.get('dataset', 'dodh'), f'{dodh_filename_list[user_id]}.edf')
         reader = EDFReader(file)
         raw = reader.raw
 
     if dataset == 'dodo':
-        print()
+        config = Config()
+        annotation = convert_label_to_annotations(dodo_filename_list[user_id])
+        file = os.path.join(config.get('dataset', 'dodo'), f'{dodo_filename_list[user_id]}.edf')
+        reader = EDFReader(file)
+        raw = reader.raw
+
+    raw.resample(sfreq)
+    assert sfreq == raw.info['sfreq'], 'The sample freq is not 100Hz'
 
     return raw, annotation
 
@@ -51,12 +60,12 @@ mapping = {'EOG horizontal': 'eog',
            'Event marker': 'misc'}
 
 
-def get_feature_by_user_id(user_id, feature_name, days=None, obs_mins=20, plot=False):
+def get_feature_by_user_id(dataset, user_id, feature_name, days=None, obs_mins=20, output=None):
     if days is None:
         days = [1]
 
     # [physionet, dodh, dodh]
-    raw, annotation = get_raw_and_annotation('dodh', user_id, days)
+    raw, annotation = get_raw_and_annotation(dataset, user_id, days)
 
     first_special_stage_index = get_stage_onset(annotation, stage_name="Sleep stage 1")
 
@@ -87,7 +96,7 @@ def get_feature_by_user_id(user_id, feature_name, days=None, obs_mins=20, plot=F
 
     feat.index *= chunk_duration / 60  # 将index修改为分钟
 
-    if not plot:
+    if not output:
         return feat[feature_name]
 
     plt.figure()
@@ -112,22 +121,26 @@ def get_feature_by_user_id(user_id, feature_name, days=None, obs_mins=20, plot=F
     # plt.ylim((0, 8000))
     plt.legend(handles=patch_list)
     plt.title(feature_name)
-    plt.show()
-
+    if output == 'show':
+        plt.show()
+    else:
+        plt.savefig(f'{output}.png')
 
 # user id in [0, ?]
 ALICE, BOB = 0, 1
 feats = pd.DataFrame()
-for use_idx in range(0, 10):
+dataset = 'dodo'
+n_users = len(dodo_filename_list)
+for use_idx in range(0, n_users):
     # for day_idx in [1]:
     for day_idx in [1]:
         plot = False
         tmp = get_feature_by_user_id(
-            use_idx, yasa_ordered_feat_list[1],
-            days=[day_idx], plot=plot, obs_mins=10)
+            dataset, use_idx, yasa_ordered_feat_list[1],
+            days=[day_idx], output=plot, obs_mins=10)
         if plot == True:
             continue
         tmp.name = f'{use_idx}_{day_idx}'
         feats = pd.concat([feats, tmp], axis=1)
 
-plot_feat_change(feats, yasa_ordered_feat_list[1])
+plot_feat_change(feats, yasa_ordered_feat_list[1], dataset)
