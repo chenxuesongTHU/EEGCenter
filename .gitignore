@@ -1,10 +1,13 @@
+/.idea
 /.idea/*
 
 /main.py
+/data
 /data/*
+/tmp
 /tmp/*
+/DatasetInterface
 /DatasetInterface/*
-#!/data/feats/featsFormat.md
 
 .DS_Store
 *.pyc

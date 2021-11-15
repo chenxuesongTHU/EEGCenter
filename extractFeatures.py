@@ -17,11 +17,10 @@ data_path = "./data"
 file_name = os.path.join(data_path, 'raw/sample/1.edf')
 raw_edf = Reader.EDFReader(file_name)
 print(raw_edf.raw.info)
-# print(raw_edf.raw.annotations)
+print(raw_edf.raw)
 
 
 # STEP 2: 将统一的数据格式交给FeatureExtractor，按照不同方式进行特征提取，并保存至./data/feats/路径下。
-# 存储数据格式见./data/feats/featsFormat.md
-print(raw_edf.raw)
-psd = FeatureExtractor.PowerSpectralDensity(raw_edf.raw)
-print(psd.value.shape)  # (nchan, 5)
+# psd = FeatureExtractor.PowerSpectralDensity(raw_edf.raw)
+# print(psd.value.shape)  # (nchan, 5)
+ae = FeatureExtractor.ApproximateEntropy(raw_edf.raw)
