@@ -70,5 +70,7 @@ yasa_feat_list = [
 
 yasa_ordered_feat_list = [
     'eog_abspow', 'eeg_petrosian', 'eeg_abspow',  # significant top 3
-    'eeg_beta'
+    'eeg_beta', 'eeg_petrosian_c7min_norm', 'eeg_fdelta',
+    'eog_fdelta_c7min_norm', 'eeg_db', 'eeg_perm',
+    'eog_petrosian', 
 ]

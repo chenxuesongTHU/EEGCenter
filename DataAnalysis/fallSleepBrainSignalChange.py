@@ -47,7 +47,8 @@ def get_raw_and_annotation(dataset, user_id, days=1):
         reader = EDFReader(file)
         raw = reader.raw
 
-    raw.resample(sfreq)
+    if raw.info['sfreq'] != 100:
+        raw.resample(sfreq)
     assert sfreq == raw.info['sfreq'], 'The sample freq is not 100Hz'
 
     return raw, annotation
@@ -84,7 +85,8 @@ def get_feature_by_user_id(dataset, user_id, feature_name, days=None, obs_mins=2
              (events_train[-1][0] + chunk_duration * sfreq - 1) / sfreq)  # 左闭右闭
 
     sls = yasa.SleepStaging(raw,
-                            eeg_name="C3_M2",
+                            #eeg_name="C3_M2",
+                            eeg_name="F4_O2",
                             # eeg_name="EEG Pz-Oz",
                             eog_name="EOG1",
                             # eog_name="EOG horizontal",
@@ -128,19 +130,21 @@ def get_feature_by_user_id(dataset, user_id, feature_name, days=None, obs_mins=2
 
 # user id in [0, ?]
 ALICE, BOB = 0, 1
-feats = pd.DataFrame()
-dataset = 'dodo'
-n_users = len(dodo_filename_list)
-for use_idx in range(0, n_users):
-    # for day_idx in [1]:
-    for day_idx in [1]:
-        plot = False
-        tmp = get_feature_by_user_id(
-            dataset, use_idx, yasa_ordered_feat_list[1],
-            days=[day_idx], output=plot, obs_mins=10)
-        if plot == True:
-            continue
-        tmp.name = f'{use_idx}_{day_idx}'
-        feats = pd.concat([feats, tmp], axis=1)
+for dataset in ['dodh', 'dodo']:
+    feats = pd.DataFrame()
+    n_users = len(eval(f'{dataset}_filename_list'))
+    #n_users = 10
+    feat_idx = 0
+    for use_idx in range(0, n_users):
+        # for day_idx in [1]:
+        for day_idx in [1]:
+            plot = False
+            tmp = get_feature_by_user_id(
+                dataset, use_idx, yasa_ordered_feat_list[feat_idx],
+                days=[day_idx], output=plot, obs_mins=10)
+            if plot == True:
+                continue
+            tmp.name = f'{use_idx}_{day_idx}'
+            feats = pd.concat([feats, tmp], axis=1)
 
-plot_feat_change(feats, yasa_ordered_feat_list[1], dataset)
+    plot_feat_change(feats, yasa_ordered_feat_list[feat_idx], dataset)
