@@ -9,8 +9,8 @@ class DifferentialEntropy(BaseFeature):
 
         psds, freqs = psd_welch(self.raw, fmin=0.5, fmax=80.)
         psds /= np.sum(psds, axis=-1, keepdims=True)
-        de_feat_list = []
 
+        de_feat_list = []
         for fmin, fmax in FREQ_BANDS.values():
             psds_band = psds[:, (freqs >= fmin) & (freqs < fmax)].mean(axis=-1)
             des_band = np.log2(100 * psds_band)

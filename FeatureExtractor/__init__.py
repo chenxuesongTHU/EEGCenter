@@ -13,7 +13,6 @@ from .psd import PowerSpectralDensity
 from .ae import ApproximateEntropy
 from .se import SampleEntropy
 from .pe import PermutationEntropy
-from .lzc import LZComplexity
 
 '''
     Frequency band division
@@ -29,8 +28,8 @@ from .lzc import LZComplexity
         近似熵, Approximate Entropy, ae
         样本熵, Sample Entropy, se
         模糊熵, Fuzzy Entropy, fe
+        (https://www.zhihu.com/question/266285555)
         排列熵, Permutation Entropy, pe
-        LZ复杂度, LZ Complexity, lzc
         
     Feature file format
         output file name: userid_channel.feat
