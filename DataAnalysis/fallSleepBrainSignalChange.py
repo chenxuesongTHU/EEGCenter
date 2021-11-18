@@ -9,6 +9,7 @@
 """
 import os.path
 import sys
+
 sys.path.append('.')
 sys.path.append('..')
 
@@ -23,7 +24,6 @@ from Reader.EDFReader import EDFReader
 from Scripts import convert_label_to_annotations
 
 
-
 def get_raw_and_annotation(dataset, user_id, days=1):
     raw = None
     annotation = None
@@ -35,15 +35,23 @@ def get_raw_and_annotation(dataset, user_id, days=1):
 
     if dataset == 'dodh':
         config = Config()
-        annotation = convert_label_to_annotations(dodh_filename_list[user_id])
+        annotation = convert_label_to_annotations(dodh_filename_list[user_id], dataset)
         file = os.path.join(config.get('dataset', 'dodh'), f'{dodh_filename_list[user_id]}.edf')
         reader = EDFReader(file)
         raw = reader.raw
 
     if dataset == 'dodo':
         config = Config()
-        annotation = convert_label_to_annotations(dodo_filename_list[user_id])
+        annotation = convert_label_to_annotations(dodo_filename_list[user_id], dataset)
         file = os.path.join(config.get('dataset', 'dodo'), f'{dodo_filename_list[user_id]}.edf')
+        reader = EDFReader(file)
+        raw = reader.raw
+
+    if dataset == 'ChineseMedicine':
+        config = Config()
+        file_path = os.path.join(config.get('dataset', dataset), f'{user_id}.txt')
+        annotation = convert_label_to_annotations(user_id, dataset, file_path)
+        file = os.path.join(config.get('dataset', dataset), f'{user_id}.edf')
         reader = EDFReader(file)
         raw = reader.raw
 
@@ -61,7 +69,7 @@ mapping = {'EOG horizontal': 'eog',
            'Event marker': 'misc'}
 
 
-def get_feature_by_user_id(dataset, user_id, feature_name, days=None, obs_mins=20, output=None):
+def get_feature_by_user_id(dataset, user_id, feature_name, days=None, obs_mins=20, output='show'):
     if days is None:
         days = [1]
 
@@ -84,11 +92,23 @@ def get_feature_by_user_id(dataset, user_id, feature_name, days=None, obs_mins=2
     raw.crop(events_train[0][0] / sfreq,
              (events_train[-1][0] + chunk_duration * sfreq - 1) / sfreq)  # 左闭右闭
 
+    eeg_name = None
+    eog_name = None
+    if dataset == 'ChineseMedicine':
+        print('channels:', raw.ch_names)
+        for name in ['F4-M1', 'F4-A1']:
+            if name in raw.ch_names:
+                eeg_name = name
+                break
+        for name in ['E1-M2', 'LOC-A2']:
+            if name in raw.ch_names:
+                eog_name = name
+                break
     sls = yasa.SleepStaging(raw,
-                            #eeg_name="C3_M2",
-                            eeg_name="F4_O2",
-                            # eeg_name="EEG Pz-Oz",
-                            eog_name="EOG1",
+                            # eeg_name="C3_M2",
+                            # eeg_name="F4_O2",
+                            eeg_name=eeg_name,
+                            eog_name=eog_name,
                             # eog_name="EOG horizontal",
                             # emg_name="EMG1-EMG2",
                             # metadata=dict(age=29, male=True)
@@ -96,10 +116,15 @@ def get_feature_by_user_id(dataset, user_id, feature_name, days=None, obs_mins=2
 
     feat = sls.get_features()
 
-    feat.index *= chunk_duration / 60  # 将index修改为分钟
-
+    # 将index修改为分钟
+    feat.index *= chunk_duration / 60
+    # 修改index，若N1前时间不够observation的长度，则在后段对齐
+    feat.index += 2 * obs_mins - chunk_duration / 60 - feat.index[-1]
     if not output:
-        return feat[feature_name]
+        if feature_name in feat.columns:
+            return feat[feature_name]
+        else:
+            return None
 
     plt.figure()
     ax = feat.plot(y=feature_name, kind='line')
@@ -128,12 +153,36 @@ def get_feature_by_user_id(dataset, user_id, feature_name, days=None, obs_mins=2
     else:
         plt.savefig(f'{output}.png')
 
-# user id in [0, ?]
-ALICE, BOB = 0, 1
-for dataset in ['dodh', 'dodo']:
+
+# run on deepest
+def dodh_and_dodo():
+    for dataset in ['dodh', 'dodo']:
+        feats = pd.DataFrame()
+        n_users = len(eval(f'{dataset}_filename_list'))
+        # n_users = 10
+        feat_idx = 0
+        for use_idx in range(0, n_users):
+            # for day_idx in [1]:
+            for day_idx in [1]:
+                plot = True
+                tmp = get_feature_by_user_id(
+                    dataset, use_idx, yasa_ordered_feat_list[feat_idx],
+                    days=[day_idx], output=plot, obs_mins=10)
+                if plot:
+                    continue
+                tmp.name = f'{use_idx}_{day_idx}'
+                feats = pd.concat([feats, tmp], axis=1)
+
+        plot_feat_change(feats, yasa_ordered_feat_list[feat_idx], dataset)
+
+
+# run on mac
+
+def physionet():
+    dataset = 'physionet'
     feats = pd.DataFrame()
-    n_users = len(eval(f'{dataset}_filename_list'))
-    #n_users = 10
+    # n_users = len(eval(f'{dataset}_filename_list'))
+    n_users = 10
     feat_idx = 0
     for use_idx in range(0, n_users):
         # for day_idx in [1]:
@@ -148,3 +197,35 @@ for dataset in ['dodh', 'dodo']:
             feats = pd.concat([feats, tmp], axis=1)
 
     plot_feat_change(feats, yasa_ordered_feat_list[feat_idx], dataset)
+
+
+# physionet()
+def ChineseMedicine():
+    dataset = 'ChineseMedicine'
+    use_idx = 1
+    feat_idx = 0
+    feats = pd.DataFrame()
+    human_type = 'health'    # health insomnia
+    aid_type = ''      # ta-VNS tn-VNS
+    stage_type = ''    # before after
+    healthy_user_list = ChineseMedicine_user_info['health']
+    # healthy_user_list = ChineseMedicine_user_info[human_type][aid_type][stage_type]
+    # healthy_user_list = ChineseMedicine_user_info['health']
+    # healthy_user_list = [1, 4]
+    for use_idx in healthy_user_list:
+        # for day_idx in [1]:
+        for day_idx in [1]:
+            plot = False
+            tmp = get_feature_by_user_id(
+                dataset, use_idx, yasa_ordered_feat_list[feat_idx],
+                days=[day_idx], output=plot, obs_mins=10)
+            if plot == True or type(tmp) == type(None):
+                continue
+            tmp.name = f'{use_idx}_{day_idx}'
+            feats = pd.concat([feats, tmp], axis=1)
+
+    output_path = f'./ChineseMedicine/{human_type}_{aid_type}_{stage_type}_'+yasa_ordered_feat_list[feat_idx]
+    plot_feat_change(feats, yasa_ordered_feat_list[feat_idx],
+                     output_path)
+    feats.to_csv(output_path+'.csv')
+ChineseMedicine()

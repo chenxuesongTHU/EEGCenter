@@ -23,6 +23,15 @@ event_id_2_annotation_desc = {1: 'Sleep stage W',
                               0: 'unknow',
                               }
 
+Chinese_medicine_2_event_id = {
+    10: 1,
+    1: 2,
+    2: 3,
+    3: 4,
+    5: 5,
+    0: 0,
+    6: 5, #
+}
 face_color_legend = {
     'W': 1,
     'N1': 2,
@@ -72,5 +81,5 @@ yasa_ordered_feat_list = [
     'eog_abspow', 'eeg_petrosian', 'eeg_abspow',  # significant top 3
     'eeg_beta', 'eeg_petrosian_c7min_norm', 'eeg_fdelta',
     'eog_fdelta_c7min_norm', 'eeg_db', 'eeg_perm',
-    'eog_petrosian', 
+    'eog_petrosian',
 ]

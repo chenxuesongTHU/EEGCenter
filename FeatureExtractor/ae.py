@@ -23,7 +23,7 @@ class ApproximateEntropy(BaseFeature):
                 X = []
                 for i in range(len(x) - win_size + 1 - temp):
                     X.append(x[i:i + win_size + temp])
-                X = np.array(X)
+                # X = np.array(X)
                 # 计算X任意一行数据与所有行数据对应索引数据的差值绝对值的最大值
                 D_value = []  # 存储差值
                 for i in X:
