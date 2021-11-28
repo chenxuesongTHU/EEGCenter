@@ -2,13 +2,16 @@
 # -*- encoding: utf-8 -*-
 
 """
-@File        :   brainSignalChange
-@Time        :   2021/11/4 7:51 下午
+@File        :   gen_physionet  
+@Time        :   2021/11/24 4:23 下午
 @Author      :   Xuesong Chen
-@Description :
+@Description :   
 """
+
 import os.path
 import sys
+
+import numpy as np
 
 sys.path.append('.')
 sys.path.append('..')
@@ -60,13 +63,6 @@ def get_raw_and_annotation(dataset, user_id, days=1):
     assert sfreq == raw.info['sfreq'], 'The sample freq is not 100Hz'
 
     return raw, annotation
-
-
-mapping = {'EOG horizontal': 'eog',
-           'Resp oro-nasal': 'resp',
-           'EMG submental': 'emg',
-           'Temp rectal': 'misc',
-           'Event marker': 'misc'}
 
 
 def get_feature_by_user_id(dataset, user_id, feature_name, days=None, obs_mins=20, output='show'):
@@ -130,74 +126,19 @@ def get_feature_by_user_id(dataset, user_id, feature_name, days=None, obs_mins=2
 
     # 将index修改为分钟
     feat.index *= chunk_duration / 60
-    # 修改index，若N1前时间不够observation的长度，则在后段对齐
-    feat.index += 2 * obs_mins - chunk_duration / 60 - feat.index[-1]
-    if not output:
-        if feature_name in feat.columns:
-            return feat[feature_name]
-        else:
-            return None
+    return feat
 
-    plt.figure()
-    ax = feat.plot(y=feature_name, kind='line')
-
-    plot_stage_span(ax, annotation, start_sample_id)
-
-    plt.xlabel('time (min)')
-    # plt.vlines(pos_w1_w2, -1, 10000, color="red")  # 竖线
-    patch_list = []
-    for stage, id in face_color_legend.items():
-        patch_list.append(
-            mpatches.Patch(color=color_dic[id], label=stage, alpha=0.5)
-        )
-
-    # x_ticks = plt.xticks()[0]
-    # x_ticks_label = x_ticks * chunk_duration / 60
-    # x_ticks_label = [int(x) for x in x_ticks_label]
-    # plt.xticks(x_ticks, x_ticks_label)
-    # plt.ylim((1.005, 1.025))
-    # plt.ylim((0, 12000))
-    # plt.ylim((0, 8000))
-    plt.legend(handles=patch_list)
-    plt.title(feature_name)
-    if output == 'show':
-        plt.show()
-    else:
-        plt.savefig(f'{output}.png')
-
-
-# run on deepest
-def dodh_and_dodo():
-    for dataset in ['dodh', 'dodo']:
-        feats = pd.DataFrame()
-        n_users = len(eval(f'{dataset}_filename_list'))
-        # n_users = 10
-        feat_idx = 0
-        for use_idx in range(0, n_users):
-            # for day_idx in [1]:
-            for day_idx in [1]:
-                plot = True
-                tmp = get_feature_by_user_id(
-                    dataset, use_idx, yasa_ordered_feat_list[feat_idx],
-                    days=[day_idx], output=plot, obs_mins=10)
-                if plot:
-                    continue
-                tmp.name = f'{use_idx}_{day_idx}'
-                feats = pd.concat([feats, tmp], axis=1)
-
-        plot_feat_change(feats, yasa_ordered_feat_list[feat_idx], dataset)
-
-
-# run on mac
 
 def physionet():
     dataset = 'physionet'
-    feats = pd.DataFrame()
+    res = pd.DataFrame()
     # n_users = len(eval(f'{dataset}_filename_list'))
-    n_users = 1
+    n_users = 83
     feat_idx = 0
     for use_idx in range(0, n_users):
         # for day_idx in [1]:
+        if use_idx in [36, 52, 39, 68, 69, 78, 79]:
+            continue
         for day_idx in [1]:
             plot = False
             tmp = get_feature_by_user_id(
@@ -205,44 +146,15 @@ def physionet():
                 days=[day_idx], output=plot, obs_mins=10)
             if plot == True:
                 continue
-            tmp.name = f'{use_idx}_{day_idx}'
-            feats = pd.concat([feats, tmp], axis=1)
+            if tmp.shape[0] != 10 * 2 * 2:
+                continue
+            # 删除时间列
+            # tmp = tmp.to_numpy()[:, :-2]
+            # tmp = np.insert(tmp, 0, np.arange(40), axis=1)
+            # res.append(tmp)
+            res = pd.concat([res, tmp], axis=0)
 
-    plot_feat_change(feats, yasa_ordered_feat_list[feat_idx], dataset)
+    return res
 
-
-# physionet()
-def ChineseMedicine():
-    dataset = 'ChineseMedicine'
-    use_idx = 1
-    feat_idx = 0
-    feats = pd.DataFrame()
-    human_type = 'insomnia'    # health insomnia
-    for aid_type in ['ta-VNS', 'tn-VNS']:
-        for stage_type in ['before', 'after']:
-            # aid_type = 'ta-VNS'      # ta-VNS tn-VNS
-            #stage_type = 'before'    # before after
-            # healthy_user_list = ChineseMedicine_user_info['health']
-            healthy_user_list = ChineseMedicine_user_info[human_type][aid_type][stage_type]
-            # healthy_user_list = ChineseMedicine_user_info['health']
-            # healthy_user_list = [1, 4]
-            for use_idx in healthy_user_list:
-                # for day_idx in [1]:
-                for day_idx in [1]:
-                    plot = False
-                    tmp = get_feature_by_user_id(
-                        dataset, use_idx, yasa_ordered_feat_list[feat_idx],
-                        days=[day_idx], output=plot, obs_mins=10)
-                    if plot == True or type(tmp) == type(None):
-                        continue
-                    tmp.name = f'{use_idx}_{day_idx}'
-                    tmp.to_csv(f'./ChineseMedicine/singleUser/data/{use_idx}.csv')
-                    feats = pd.concat([feats, tmp], axis=1)
-
-        output_path = f'./ChineseMedicine/{human_type}_{aid_type}_{stage_type}_'+yasa_ordered_feat_list[feat_idx]
-        plot_feat_change(feats, yasa_ordered_feat_list[feat_idx],
-                         output_path)
-        feats.to_csv(output_path+'.csv')
-
-# ChineseMedicine()
-physionet()
+res = physionet()
+res.to_csv('./data/20min.csv')

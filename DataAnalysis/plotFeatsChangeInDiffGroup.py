@@ -44,11 +44,11 @@ def one_group():
         group_1 = pd.read_csv(group_1_file_path, index_col=0)
         group_1.index.name = 'health'
         group_2 = pd.read_csv(group_2_file_path, index_col=0)
-        group_2.index.name = f'insomnia_ta-VNS_before'
+        group_2.index.name = f'{aid_method}_before'
         group_3 = pd.read_csv(group_3_file_path, index_col=0)
-        group_3.index.name = f'insomnia_tn-VNS_after'
+        group_3.index.name = f'{aid_method}_after'
         plot_feat_change_in_diff_group([group_1, group_2, group_3], 'eog_abspow', f'./ChineseMedicine/comparation/{aid_method}')
 
 if __name__ == '__main__':
-    all_group()
-    # one_group()
+    # all_group()
+    one_group()

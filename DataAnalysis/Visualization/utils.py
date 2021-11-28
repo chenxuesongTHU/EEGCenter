@@ -45,15 +45,18 @@ def plot_feat_change(feats, feature_name, output_path=None, label=None):
     # feats_at_time_slots = feats.mean(axis=1)
     # feats_std_at_time_slots = feats.std(axis=1)
     # 删除最大值和最小值后求平均和方差
-
+    drop_ratio = 0.4
     if feats.shape[1] >= 4:
-        max_idxs = feats.idxmax(axis=1)
-        for item in max_idxs.items():
-            feats.loc[item] = None
+        cut_num = int(feats.shape[1] * (drop_ratio/2))
+        while cut_num > 0:
+            max_idxs = feats.idxmax(axis=1)
+            for item in max_idxs.items():
+                feats.loc[item] = None
 
-        min_idxs = feats.idxmin(axis=1)
-        for item in min_idxs.items():
-            feats.loc[item] = None
+            min_idxs = feats.idxmin(axis=1)
+            for item in min_idxs.items():
+                feats.loc[item] = None
+            cut_num -= 1
 
     feats_at_time_slots = feats.mean(axis=1)
     feats_std_at_time_slots = feats.std(axis=1)

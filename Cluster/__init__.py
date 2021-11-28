@@ -3,10 +3,7 @@
 
 """
 @File        :   __init__.py  
-@Time        :   2021/10/9 3:59 下午
+@Time        :   2021/11/18 4:22 下午
 @Author      :   Xuesong Chen
 @Description :   
 """
-
-from .EDFReader import EDFReader
-from .BrainVisionReader import BrainVisionReader

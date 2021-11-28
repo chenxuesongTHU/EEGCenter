@@ -26,3 +26,4 @@ raw_edf = Reader.EDFReader(file_name)
 raw_edf.raw.resample(100)
 print(raw_edf.raw.info)
 ae = FeatureExtractor.PermutationEntropy(raw_edf.raw)
+
