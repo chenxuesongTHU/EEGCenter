@@ -126,7 +126,9 @@ annot_train.crop(annot_train[1]['onset'] - 30 * 60,
 raw_train.set_annotations(annot_train, emit_warning=False)
 
 events_train, _ = mne.events_from_annotations(
-    raw_train, event_id=annotation_desc_2_event_id, chunk_duration=30.)
+    raw_train, event_id=annotation_desc_2_event_id,
+    # chunk_duration=30.
+)
 
 # create a new event_id that unifies stages 3 and 4
 event_id = {'Sleep stage W': 1,
@@ -149,8 +151,12 @@ stage_colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
 
 tmax = 30. - 1. / raw_train.info['sfreq']  # tmax in included
 
-epochs_train = mne.Epochs(raw=raw_train, events=events_train,
-                          event_id=event_id, tmin=0., tmax=tmax, baseline=None)
+epochs_train = mne.Epochs(raw=raw_train,
+                          events=events_train,
+                          event_id=event_id,
+                          # tmin=0., tmax=tmax,
+                          # baseline=None
+                          )
 
 print(epochs_train)
 

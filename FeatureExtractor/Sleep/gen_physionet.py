@@ -146,7 +146,7 @@ def physionet():
                 days=[day_idx], output=plot, obs_mins=10)
             if plot == True:
                 continue
-            if tmp.shape[0] != 10 * 2 * 2:
+            if tmp.shape[0] != 10 * 2:
                 continue
             # 删除时间列
             # tmp = tmp.to_numpy()[:, :-2]
@@ -157,4 +157,4 @@ def physionet():
     return res
 
 res = physionet()
-res.to_csv('./data/20min.csv')
+res.to_csv('./data/20min_win_siz=60s.csv')

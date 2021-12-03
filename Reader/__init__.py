@@ -10,3 +10,4 @@
 
 from .EDFReader import EDFReader
 from .BrainVisionReader import BrainVisionReader
+from .YunRuiReader import YunRuiReader

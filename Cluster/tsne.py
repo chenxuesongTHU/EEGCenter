@@ -29,7 +29,9 @@ def get_data():
     return data, label, n_samples, n_features
 
 def get_physionet():
-    df = pd.read_csv('../FeatureExtractor/Sleep/data/20min.csv', nrows=400)
+    df = pd.read_csv('../FeatureExtractor/Sleep/data/20min_win_siz=60s.csv',
+                     # nrows=400
+                     )
     df = df.loc[(df['epoch'] < 20) & (10 < df['epoch'])]
     data = df[yasa_ordered_feat_list[:4]]         # 删除伪label和time col
     # data = data[0:3]
@@ -72,18 +74,19 @@ def plot_embedding_3D(data, label, title):
 
 
 def main():
-    data, label, n_samples, n_features = get_data()
-    # data, label, n_samples, n_features = get_physionet()
+    # data, label, n_samples, n_features = get_data()
+    data, label, n_samples, n_features = get_physionet()
     print('Computing t-SNE embedding')
-    tsne = TSNE(n_components=3, init='pca', random_state=0)
+    # tsne = TSNE(n_components=3, init='pca', random_state=0)
+    tsne = TSNE(n_components=2, init='pca', random_state=0)
     t0 = time()
     result = tsne.fit_transform(data)
-    # fig = plot_embedding(result, label,
-    #                      't-SNE embedding of the digits (time %.2fs)'
-    #                      % (time() - t0))
-    fig = plot_embedding_3D(result, label,
+    fig = plot_embedding(result, label,
                          't-SNE embedding of the digits (time %.2fs)'
                          % (time() - t0))
+    # fig = plot_embedding_3D(result, label,
+    #                      't-SNE embedding of the digits (time %.2fs)'
+    #                      % (time() - t0))
     plt.show()
 
 

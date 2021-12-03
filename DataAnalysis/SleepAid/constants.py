@@ -48,7 +48,7 @@ color_dic = {
 }
 
 sfreq = 100  # 采样率
-chunk_duration = 30
+chunk_duration = 60
 
 yasa_feat_list = [
     'eeg_abspow', 'eeg_abspow_c7min_norm', 'eeg_abspow_p2min_norm', 'eeg_alpha', 'eeg_alpha_c7min_norm',
