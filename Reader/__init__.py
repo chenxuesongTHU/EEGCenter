@@ -10,3 +10,5 @@
 
 from .EDFReader import EDFReader
 from .BrainVisionReader import BrainVisionReader
+from .CdtReader import CdtReader
+from .CntReader import CntReader
