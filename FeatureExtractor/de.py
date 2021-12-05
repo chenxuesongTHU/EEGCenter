@@ -4,10 +4,10 @@ from .base import *
 
 
 class DifferentialEntropy(BaseFeature):
-    def __init__(self, raw):
-        BaseFeature.__init__(self, raw)
+    def __init__(self, raw, picks):
+        BaseFeature.__init__(self, raw, picks=picks)
 
-        psds, freqs = psd_welch(self.raw, fmin=0.5, fmax=80.)
+        psds, freqs = psd_welch(self.raw, fmin=0.5, fmax=80., picks=picks)
         psds /= np.sum(psds, axis=-1, keepdims=True)
 
         de_feat_list = []

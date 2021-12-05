@@ -5,17 +5,17 @@ from .base import BaseFeature
 
 
 class PermutationEntropy(BaseFeature):
-    def __init__(self, raw):
+    def __init__(self, raw, picks):
         """
             win_size 滑动时窗的长度
             t 时间间隔
         """
-        BaseFeature.__init__(self, raw)
+        BaseFeature.__init__(self, raw, picks=picks)
         win_size = 1000
         t = 1
 
         # 将转化为数组,方便数据处理
-        data = self._raw.get_data()
+        data = self._raw.get_data(picks=picks)
         entropy_list = []
         for i in range(data.shape[0]):
             x = data[i, :]
