@@ -3,19 +3,19 @@ from .base import BaseFeature
 
 
 class FuzzyEntropy(BaseFeature):
-    def __init__(self, raw):
+    def __init__(self, raw, picks):
         """
             win_size 滑动时窗的长度
             r 阈值系数 取值范围一般为：0.1~0.25
             n 计算模糊隶属度时的维度
         """
-        BaseFeature.__init__(self, raw)
+        BaseFeature.__init__(self, raw, picks=picks)
         win_size = 1000
         r = 0.15
         n = 2
 
         # 将x转化为数组
-        data = self._raw.get_data()
+        data = self._raw.get_data(picks=picks)
         entropy_list = []
         for i in range(data.shape[0]):
             x = data[i, :]

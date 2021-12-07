@@ -10,4 +10,9 @@
 
 from .EDFReader import EDFReader
 from .BrainVisionReader import BrainVisionReader
+<<<<<<< HEAD
 from .YunRuiReader import YunRuiReader
+=======
+from .CdtReader import CdtReader
+from .CntReader import CntReader
+>>>>>>> origin/master

@@ -10,9 +10,10 @@ FREQ_BANDS = {
 
 
 class BaseFeature:
-    def __init__(self, raw):
+    def __init__(self, raw, picks):
         self._raw = raw
         self._value = None
+        self._picks = picks
 
     @property
     def raw(self):

@@ -28,14 +28,13 @@ from .pe import PermutationEntropy
         近似熵, Approximate Entropy, ae
         样本熵, Sample Entropy, se
         模糊熵, Fuzzy Entropy, fe
-        (https://www.zhihu.com/question/266285555)
         排列熵, Permutation Entropy, pe
         
     Feature file format
         output file name: userid_channel.feat
-        Each sample occupies one line, and consists of the rest four properties separated by `\t`. 
         - user_id: string; input file name by default;
         - channel: string; such as O1 or O1_02;
+        Each sample occupies one line, and consists of the rest four properties separated by `\t`. 
         - sample_id: int;
         - task_id: string; the default value is -1, which means exist no task info;
         - feature vector: vector; separated by `,`;
