@@ -34,7 +34,7 @@ files = os.listdir(params.src_path)
 for file_name in files:
     file_path = f'{params.src_path}{file_name}'
     src_df = pd.read_csv(file_path, encoding='GB2312', usecols=['Time', params.tag_col])
-    dst_df = pd.DataFrame(index=params.tags, columns=['startTime', 'endTime'])  # 时间单位为s
+    dst_df = pd.DataFrame(index=params.tags, columns=['startTime', 'endTime'])
     dst_df.index.name = 'epoch'
     abbr_to_col = {
         's': 'startTime',
@@ -45,6 +45,6 @@ for file_name in files:
         trigger = row[params.tag_col]
         epoch, start_or_end = trigger.split('-')
         if epoch in dst_df.index:
-            dst_df.loc[epoch, abbr_to_col[start_or_end]] = time / 1000
+            dst_df.loc[epoch, abbr_to_col[start_or_end]] = time / 1000   # 时间单位为s
     dst_df.to_csv(f'{params.dst_path}{file_name}')
 
