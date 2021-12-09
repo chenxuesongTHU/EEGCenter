@@ -14,8 +14,10 @@ import pandas as pd
 class csvAnnotation(BaseAnnotation):
     def __init__(self, file_name):
         BaseAnnotation.__init__(self, file_name)
-        self._raw = mne.io.read_raw_curry(self._file_name)
-        if self._anno_file:
-            if annotation_file.endswith('cdt'):
-                self._anno = mne.read_annotations(self._anno_file)
-            self._raw.set_annotations(self._anno)
+        df = pd.read_csv(file_name)
+        df['duration'] = df['endTime'] - df['startTime']
+        self._anno = mne.Annotations(onset=df['startTime'],
+                               duration=df['duration'],
+                               description=df['epoch'])
+
+

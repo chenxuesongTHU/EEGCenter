@@ -10,6 +10,7 @@
 
 import mne
 from .base import BaseReader
+from .Annotation import csvAnnotation
 
 
 class EDFReader(BaseReader):
@@ -19,4 +20,6 @@ class EDFReader(BaseReader):
         if self._anno_file:
             if annotation_file.endswith('edf'):
                 self._anno = mne.read_annotations(self._anno_file)
+            if annotation_file.endswith('csv'):
+                self._anno = csvAnnotation(annotation_file).annotation
             self._raw.set_annotations(self._anno)
