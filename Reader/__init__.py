@@ -13,3 +13,4 @@ from .BrainVisionReader import BrainVisionReader
 from .YunRuiReader import YunRuiReader
 from .CdtReader import CdtReader
 from .CntReader import CntReader
+from .AcousticReader import AcousticReader

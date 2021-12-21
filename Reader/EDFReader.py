@@ -11,15 +11,39 @@
 import mne
 from .base import BaseReader
 from .Annotation import csvAnnotation
+import numpy as np
 
 
 class EDFReader(BaseReader):
     def __init__(self, file_name, annotation_file=None):
         BaseReader.__init__(self, file_name, annotation_file)
         self._raw = mne.io.read_raw_edf(self._file_name)
+        self._raw.set_channel_types({'VEO': 'eog'})
+        ten_twenty_montage = mne.channels.make_standard_montage('standard_1020')
+        self._raw.set_montage(ten_twenty_montage)
         if self._anno_file:
             if annotation_file.endswith('edf'):
                 self._anno = mne.read_annotations(self._anno_file)
             if annotation_file.endswith('csv'):
                 self._anno = csvAnnotation(annotation_file).annotation
             self._raw.set_annotations(self._anno)
+
+    def get_event_raw(self, event_name):
+        '''
+        获取指定event阶段的raw
+        Parameters
+        ----------
+        tag_name: Annotation中指定阶段的名称
+
+        Returns
+        -------
+        event_raw: Raw
+        '''
+        tmp_raw = self.raw.copy()
+        event_idx = np.where(self._anno.description == event_name)
+        start_time = self._anno.onset[event_idx][0]
+        duration = self._anno.duration[event_idx][0]
+        return tmp_raw.crop(tmin=start_time, tmax=start_time+duration, include_tmax=True)
+
+
+

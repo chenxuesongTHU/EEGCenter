@@ -2,11 +2,15 @@
 # -*- encoding: utf-8 -*-
 
 """
-@File        :   test_reader  
-@Time        :   2021/11/26 4:22 下午
+@File        :   plotBandPowerChange  
+@Time        :   2021/12/17 11:01 上午
 @Author      :   Xuesong Chen
 @Description :   
 """
+import pandas as pd
+from yasa.spectral import bandpower
+from yasa.others import sliding_window
+from yasa.spectral import bandpower_from_psd_ndarray
 import os.path
 
 import matplotlib
@@ -19,16 +23,29 @@ import numpy as np
 from src.sleep.constants import *
 import mne
 
+def get_baseline(user_id):
+    df = pd.read_csv(
+        f'../data/EEGAndMusic/baseline/{user_id}.csv',
+        index_col=0
+    )
+    return df
+
 # plt.ion()
 # user_id = 'p10'
 user_id = 'p03'
 reader = EDFReader(
-    f'./data/EEGAndMusic/{user_id}-sound-1202_EEG_cleaned.edf',
+    f'../data/EEGAndMusic/{user_id}-sound-1202_EEG_cleaned.edf',
     f'/Users/cxs/project/EEGCenterV2/EEGCenter/data/EEGAndMusic/annotations/new/{user_id}-sound-1202.csv'
 )
 
 raw = reader.raw
+
+baseline = get_baseline(user_id)
+
 print(raw.ch_names)
+
+raw_data = raw.get_data()
+# raw_data
 raw.set_channel_types({'VEO': 'eog'})
 ten_twenty_montage = mne.channels.make_standard_montage('standard_1020')
 raw.set_montage(ten_twenty_montage)
@@ -60,7 +77,7 @@ for epoch_idx in range(epochs.events.shape[0]):
     for win_idx in range(n_wins):
         tmin = win_idx * win_duration
         tmax = (win_idx+1) * win_duration
-        figs = epoch.plot_psd_topomap(
+        figs = epoch.plot_topomap(
             # ch_type='grad',
             tmin=tmin,
             tmax=tmax,
@@ -76,32 +93,3 @@ for epoch_idx in range(epochs.events.shape[0]):
         target_path = f'./output/music_and_eeg/{user_id}_{user_id_to_name[user_id]}/'
         os.makedirs(target_path, exist_ok=True)
         figs.savefig(f'{target_path}/{event}_{tag_to_desc[event]}_{tmin}_{tmax}.png')
-
-# events, event_id = mne.events_from_annotations(
-#     raw,
-#     # event_id=annotation_desc_2_event_id,
-#     # chunk_duration=30.
-# )
-# epochs = mne.Epochs(raw=raw,
-#                     events=events,
-#                     event_id=event_id,
-#                     # tmin=0., tmax=tmax,
-#                     # baseline=None
-#                     )
-# evoked = epochs.average()
-# times = np.arange(0.05, 0.151, 0.02)
-# figs = evoked.plot_topomap(times, ch_type='eeg', time_unit='s', show=False)
-# # figs.show()
-# figs.savefig('tmp.png')
-# print()
-# raw.plot_sensors(ch_type='eeg')
-# raw_avg_ref = reader.raw.copy().set_eeg_reference(ref_channels='average')
-# raw_avg_ref.plot(block=True)
-# fig.canvas.key_press_event('a')
-# anno = reader.raw.annotations
-# for desc, duration, onset in zip(anno.description, anno.duration, anno.onset):
-#     tmp = reader.raw.copy()
-#     trail_raw = tmp.crop(tmin=onset, tmax=onset + duration, include_tmax=False)
-#     trail_raw.plot()
-#     break
-# print()
