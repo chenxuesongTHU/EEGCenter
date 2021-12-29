@@ -26,20 +26,21 @@ def file_cmp(x, y):
 
 # all_file = os.listdir(f'../output/music_and_eeg/')
 
-user_id = 'p02'
-root_path = f'../output/music_and_eeg/norm/{user_id}_{user_id_to_name[user_id]}'
-os.makedirs(root_path, exist_ok=True)
-os.makedirs(f'{root_path}/gif/', exist_ok=True)
-for tag, desc in tag_to_desc.items():
-    if tag not in ['A1', 'B1']:
-        continue
-    images = []
-    filenames = sorted(
-        (fn for fn in os.listdir(root_path) if fn.endswith('.png') and fn.startswith(tag)))
-    filenames = sorted(filenames,
-                       key=functools.cmp_to_key(file_cmp)
-                       )
-    for filename in filenames:
-        filename = os.path.join(root_path, filename)
-        images.append(imageio.imread(filename))
-    imageio.mimsave(f'{root_path}/gif/{tag}_{desc}.gif', images, duration=0.2)
+for user_id in ['p02', 'p03', 'p10']:
+    root_path = f'../output/music_and_eeg/norm/{user_id}_{user_id_to_name[user_id]}'
+    img_path = f'{root_path}/img'
+    os.makedirs(root_path, exist_ok=True)
+    os.makedirs(f'{root_path}/gif/', exist_ok=True)
+    for tag, desc in tag_to_desc.items():
+        # if tag not in ['A1', 'B1']:
+        #     continue
+        images = []
+        filenames = sorted(
+            (fn for fn in os.listdir(img_path) if fn.endswith('.png') and fn.startswith(tag)))
+        filenames = sorted(filenames,
+                           key=functools.cmp_to_key(file_cmp)
+                           )
+        for filename in filenames:
+            filename = os.path.join(img_path, filename)
+            images.append(imageio.imread(filename))
+        imageio.mimsave(f'{root_path}/gif/{tag}_{desc}.gif', images, duration=0.2)

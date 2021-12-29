@@ -15,7 +15,16 @@ import numpy as np
 
 
 class EDFReader(BaseReader):
-    def __init__(self, file_name, annotation_file=None):
+    def __init__(self, file_name, annotation_file=None, offset=0):
+        '''
+
+        Parameters
+        ----------
+        file_name
+        annotation_file
+        offset: float
+            annotation的onset应该前移还是后移动
+        '''
         BaseReader.__init__(self, file_name, annotation_file)
         self._raw = mne.io.read_raw_edf(self._file_name)
         self._raw.set_channel_types({'VEO': 'eog'})
@@ -26,6 +35,8 @@ class EDFReader(BaseReader):
                 self._anno = mne.read_annotations(self._anno_file)
             if annotation_file.endswith('csv'):
                 self._anno = csvAnnotation(annotation_file).annotation
+            if offset != 0:
+                self._anno.onset += offset
             self._raw.set_annotations(self._anno)
 
     def get_event_raw(self, event_name):
@@ -43,7 +54,8 @@ class EDFReader(BaseReader):
         event_idx = np.where(self._anno.description == event_name)
         start_time = self._anno.onset[event_idx][0]
         duration = self._anno.duration[event_idx][0]
-        return tmp_raw.crop(tmin=start_time, tmax=start_time+duration, include_tmax=True)
+        tmax = min(start_time+duration, tmp_raw.last_samp/tmp_raw.info['sfreq'])
+        return tmp_raw.crop(tmin=start_time, tmax=tmax, include_tmax=True)
 
 
 

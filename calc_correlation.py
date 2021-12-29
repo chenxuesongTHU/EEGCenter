@@ -59,7 +59,7 @@ total_raw.plot(
     show_scalebars=True,
     scalings=dict(eeg=1)
 )
-# tmp = stats.zscore(event_raw['FT9'][0], axis=1)
+tmp = stats.zscore(event_raw['FT9'][0], axis=1)
 
 # event_raw.plot()
 

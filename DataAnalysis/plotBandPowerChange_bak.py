@@ -10,7 +10,6 @@
 import sys
 
 import pandas as pd
-from sklearn.preprocessing import minmax_scale
 from yasa.spectral import bandpower
 from yasa.others import sliding_window
 from yasa.spectral import bandpower_from_psd_ndarray
@@ -35,7 +34,7 @@ from src.sleep.utils import get_user_ratings
 
 def get_baseline(user_id):
     df = pd.read_csv(
-        f'{RESULTS_PATH}/baseline/{user_id}.csv',
+        f'../data/EEGAndMusic/baseline/{user_id}.csv',
         index_col=0
     )
     return df
@@ -76,7 +75,7 @@ def plot_topomap_from_df(df, info, user_id, event, win_size):
 
 def plot_dynamic_topomap(win_size):
     # todo: 参数传递
-    for time, feat_df in zip(tf.times, region_feats):
+    for time, feat_df in zip(tf.times, norm_feats):
         feat_df.index.name = time-win_size/2
         plot_topomap_from_df(feat_df, info, user_id, stimulus, win_size)
 
@@ -101,89 +100,98 @@ def plot_span(anno, ax, user_id):
 
 
 
-for user_id in user_id_list[11:]:
-    print(f"**********当前user id{user_id}**************")
-    reader = EDFReader(
-        f'{EDF_PATH}/{user_id}.edf',
-        f'{LOG_PATH}/{user_id}.csv',
-        offset=60 * 5,  # 5 mins
+user_id = 'p03'
+stimulus = 'A1'
+
+reader = EDFReader(
+    f'../data/EEGAndMusic/{user_id}-sound-1201_EEG_cleaned.edf',
+    f'/Users/cxs/project/EEGCenterV2/EEGCenter/data/EEGAndMusic/annotations/new/{user_id}-sound-1201.csv',
+    offset=60*5, # 5 mins
+)
+
+reader.raw.set_channel_types({'VEO': 'eog'})
+ten_twenty_montage = mne.channels.make_standard_montage('standard_1020')
+reader.raw.set_montage(ten_twenty_montage)
+
+event_raw = reader.get_event_raw(stimulus)
+
+info = event_raw.info
+tf = TimeFrequency(reader.raw,  win_sec=4, relative=False)   # todo
+# tf = TimeFrequency(event_raw,  win_sec=5, relative=False, mode='psd')   # todo
+# tf = TimeFrequency(reader.raw, 5, relative=False)
+feats = tf.get_band_power()
+baseline = get_baseline(user_id)
+
+norm_feats = []
+for feat in feats:
+    _res = (feat - baseline) / baseline
+    _res.drop(index=['VEO', 'Status'], inplace=True)
+    _res = _res.loc[occipital_region]               # 仅使用枕区
+    norm_feats.append(
+        _res
     )
+#
+# for time, feat_df in zip(tf.times, norm_feats):
+#     feat_df.index.name = time
+#     plot_topomap_from_df(feat_df, info, user_id, stimulus)
+# print()
+#
+# plot_dynamic_topomap(win_size=5)
+# sys.exit(0)
 
-    reader.raw.set_channel_types({'VEO': 'eog'})
-    ten_twenty_montage = mne.channels.make_standard_montage('standard_1020')
-    reader.raw.set_montage(ten_twenty_montage)
+plot_targets = defaultdict(lambda: [])
+plot_targets_df = pd.DataFrame(columns=bands_name)
+cut_off_percent = 0 # cut off total = cut_off_percent * 2
 
-    win_size = 4
-
-    tf = TimeFrequency(reader.raw,  win_sec=win_size, relative=False)   # todo
-    # tf = TimeFrequency(event_raw,  win_sec=5, relative=False, mode='psd')   # todo
-    # tf = TimeFrequency(reader.raw, 5, relative=False)
-    feats = tf.get_band_power()
-    baseline = get_baseline(user_id)
-
-    region_feats = []                     # [times, #channles, #feats]
-    _res = None
-    for feat in feats:
-        _res = (feat - baseline) / baseline
-        _res.drop(index=['VEO', 'Status'], columns=['FreqRes', 'Relative'], inplace=True)
-
-        # 仅使用枕区
-        _res = _res.loc[occipital_region]
-
-        # 选取枕区所有channel的平均值作为枕区特征
-        n_index = _res.shape[0]
-        for column in list(_res.columns):
-            _res.loc[n_index, column] = _res[column].mean()
-        _res.rename({n_index: 'mean'}, axis='index', inplace=True)
-        region_feats.append(
-            np.array(_res.loc['mean'].values)
-        )
-
-    channel_name = list(_res.index)
-    feature_name = list(_res.columns)
-
-    region_feats = np.array(region_feats)          # [times, feats]
-    region_feats = remove_outliers(region_feats, axis=0, max_deviations=2)
-    # 为了方便跨被试的比较，将所有特征在时间轴做了minmax_scale
-    # org_shape = region_feats.shape
-    # n_times = region_feats.shape[0]
-    # region_feats = region_feats.reshape((n_times, -1))
-    # region_feats = minmax_scale(X=region_feats, feature_range=(-1, 1))
-
-    data = pd.DataFrame(
-        columns=feature_name,
-        data=region_feats,
-        index=tf.times,
-    )
-
-    rolling_length = 15
-    data = data.rolling(rolling_length).mean()
-
-    # padding操作：将滑动平均未涉及的值设置为第一个mean值。
-    rolling_start_idx = rolling_length-1
-    for idx in range(rolling_start_idx):
-        data.iloc[idx, :] = data.iloc[rolling_start_idx, :]
-
-    # z score
-    # from scipy import stats
-    # _data = stats.zscore(data, axis=0)
-    # data = pd.DataFrame(_data, index=data.index, columns=data.columns)
-
-    interest_band_list = [
-        bands_name,
-        ["Delta", "Theta", "Gamma"],
-        ["Alpha", 'Sigma', 'Beta'],
-    ]
+for time_slot_feat in norm_feats:
+    n_channels = len(time_slot_feat)
+    cut_off_channels = int(cut_off_percent * n_channels)
     for band in bands_name:
-        interest_band_list.append([band])
-    # interest_band = ["Alpha", 'Sigma', 'Beta']
-    for interest_band in interest_band_list:
-        fig, axes = plt.subplots(figsize=(25, 8))
-        sns.lineplot(data=data[interest_band])
-        # axes.set_xticks(tf.times)
-        plot_span(reader.raw.annotations, axes, user_id)
-        root_path = f'{RESULTS_PATH}/{user_id}_{user_id_to_name[user_id]}/all/'
-        os.makedirs(root_path, exist_ok=True)
-        file_name = '_'.join(interest_band)
-        plt.savefig(f"{root_path}/{file_name}.pdf", format='pdf')
+        if cut_off_percent == 0:
+            _list = np.sort(time_slot_feat[band])
+        else:
+            _list = np.sort(time_slot_feat[band])[cut_off_channels: -cut_off_channels]
+        _avg = np.average(_list)
+        plot_targets[band].append(_avg)
+
+# 将 3 sigma外的数值替换为均值
+for band in bands_name:
+    sigma = np.std(plot_targets[band])
+    mu = np.mean(plot_targets[band])
+    for _idx, _v in enumerate(plot_targets[band]):
+        if _v < (mu - 3*sigma) or _v > (mu + 3*sigma):
+            plot_targets[band][_idx] = mu
+
+# time * bands
+data = pd.DataFrame(columns=plot_targets.keys(), data=np.array(list(plot_targets.values())).T)
+data.index = tf.times
+
+rolling_length = 15
+rolling_start_idx = rolling_length-1
+data = data.rolling(rolling_length).mean()
+for idx in range(rolling_start_idx):
+    data.iloc[idx, :] = data.iloc[rolling_start_idx, :]
+
+# z score
+# from scipy import stats
+# _data = stats.zscore(data, axis=0)
+# data = pd.DataFrame(_data, index=data.index, columns=data.columns)
+
+interest_band_list = [
+    bands_name,
+    ["Delta", "Theta", "Gamma"],
+    ["Alpha", 'Sigma', 'Beta'],
+]
+for band in bands_name:
+    interest_band_list.append([band])
+# interest_band = ["Alpha", 'Sigma', 'Beta']
+for interest_band in interest_band_list:
+    fig, axes = plt.subplots(figsize=(25, 8))
+    sns.lineplot(data=data[interest_band])
+    # axes.set_xticks(tf.times)
+    plot_span(reader.raw.annotations, axes, user_id)
+    root_path = f'../output/music_and_eeg/norm/{user_id}_{user_id_to_name[user_id]}/'
+    os.makedirs(root_path, exist_ok=True)
+    file_name = '_'.join(interest_band)
+    plt.savefig(f"{root_path}/{file_name}.pdf", format='pdf')
 

@@ -99,6 +99,8 @@ class TimeFrequency:
         if bands is None:
             bands = [(0.5, 4, 'Delta'), (4, 8, 'Theta'), (8, 12, 'Alpha'),
                      (12, 16, 'Sigma'), (16, 30, 'Beta'), (30, 40, 'Gamma')]
+            # bands = [(4, 8, 'Theta'), (8, 12, 'Alpha'),
+            #          (12, 16, 'Sigma'), (16, 30, 'Beta'), (30, 40, 'Gamma')]
         self.raw = raw
         self.sfreq = raw.info['sfreq']
         self.ch_names = raw.ch_names
@@ -108,6 +110,8 @@ class TimeFrequency:
             sf=self.sfreq,
             window=win_sec, step=step_sec
         )
+        # 将times的时刻调整为窗口的中间时刻
+        self.times += win_sec / 2
         self.relative = relative
         self.bands = bands
 
@@ -166,13 +170,17 @@ class TimeFrequency:
         return feat_list
 
 
-# if __name__ == '__main__':
-#     user_id = 'p03'
-#     reader = EDFReader(
-#         f'../data/EEGAndMusic/{user_id}-sound-1202_EEG_cleaned.edf',
-#         f'/Users/cxs/project/EEGCenterV2/EEGCenter/data/EEGAndMusic/annotations/new/{user_id}-sound-1202.csv'
-#     )
-#     raw = reader.raw
-#
-#     tf = TimeFrequency(raw, 5)
-#     tf.get_band_power()
+if __name__ == '__main__':
+    user_id = 'p02'
+    reader = EDFReader(
+        f'../data/EEGAndMusic/{user_id}-sound-1201_EEG_cleaned.edf',
+        f'/Users/cxs/project/EEGCenterV2/EEGCenter/data/EEGAndMusic/annotations/new/{user_id}-sound-1201.csv',
+        offset=300
+    )
+    raw = reader.raw
+    raw = raw.crop(tmin=0, tmax=10, include_tmax=False)
+    tf = TimeFrequency(raw, win_sec=4, step_sec=1)
+    feat = tf.get_band_power()
+    print()
+    # tf.get_band_power_array()
+
