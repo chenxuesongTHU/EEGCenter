@@ -9,6 +9,7 @@
 """
 
 from .EDFReader import EDFReader
+from .FIFReader import FIFReader
 from .BrainVisionReader import BrainVisionReader
 from .YunRuiReader import YunRuiReader
 from .CdtReader import CdtReader

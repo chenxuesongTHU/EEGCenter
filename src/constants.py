@@ -22,12 +22,13 @@ bands_freqs = {
     'Gamma': (30, 40)
 }
 
-user_id_list = ['p01', 'p13', 'p03', 'p16', 'p05', 'p06', 'p17', 'p07', 'p10', 'p04', 'p11', 'p14', 'p08', 'p09',
-                'p02']
+user_id_list = ['p01', 'p02', 'p03', 'p04', 'p05', 'p06', 'p07',
+                'p08', 'p09', 'p10', 'p11', 'p13', 'p14', 'p16', 'p17']
 
 occipital_region = ['O1', 'O2', 'PO3', 'PO4', 'PO7', 'PO8', 'POz', 'Oz']
 
 DATA_PATH = "/Volumes/ExtremeSSD/EEGAndSound/"
-EDF_PATH = "/Volumes/ExtremeSSD/EEGAndSound/datasets/edf/"
+EDF_PATH = "/Volumes/ExtremeSSD/EEGAndSound/datasets/edfV3/new/not_used"
+FIF_PATH = "/Volumes/ExtremeSSD/EEGAndSound/datasets/fifV3/"
 LOG_PATH = "/Volumes/ExtremeSSD/EEGAndSound/datasets/useful_log/"
 RESULTS_PATH = "/Volumes/ExtremeSSD/EEGAndSound/results/"

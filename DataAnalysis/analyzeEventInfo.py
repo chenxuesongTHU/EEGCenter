@@ -25,7 +25,7 @@ import matplotlib
 
 from Feature import TimeFrequency
 from Feature.utils import remove_outliers
-from Reader import EDFReader
+from Reader import EDFReader, FIFReader
 
 # matplotlib.use('MacOSX')
 matplotlib.use('TkAgg')
@@ -67,7 +67,8 @@ def plot_static_topomap_from_df(df, info, params, show=True, cmp_in_diff_stimulu
         colorbar_range = get_colorbar_limits(params['user_id'])
 
     n_axes = len(bands_name)
-    figs, axes = plt.subplots(1, n_axes, figsize=(2 * n_axes, 1.5))
+    # figs, axes = plt.subplots(1, n_axes, figsize=(2 * n_axes, 1.5)) # 横向
+    figs, axes = plt.subplots(n_axes, 1, figsize=(3, 2 * n_axes))   # 纵向
     colorbar_info = defaultdict(lambda: [])
     for ax, (key, freq_range) in zip(axes, bands_freqs.items()):
 
@@ -87,11 +88,16 @@ def plot_static_topomap_from_df(df, info, params, show=True, cmp_in_diff_stimulu
     res = get_user_ratings(user_id, stimulus_id=params['stimulus'])
     sound_name = tag_to_desc[params['stimulus']]
     user_name = user_id_to_name[params['user_id']]
-    title = f"\t {user_name}\t{sound_name} 困倦:{res['困倦']} 熟悉:{res['熟悉']} 喜爱:{res['喜爱']}"
+    title = f"\t {user_name}\t{sound_name} \n 困倦:{res['困倦']} 熟悉:{res['熟悉']} 喜爱:{res['喜爱']}"
 
-    figs.suptitle(title)
-    width, height = figs.get_size_inches()
-    figs.set_size_inches(width, height + 0.8)
+    figs.suptitle(title, y=0.08)
+    # width, height = figs.get_size_inches()
+
+    # row oriented
+    # figs.set_size_inches(width+0.8, height)
+
+    # column oriented
+    # figs.set_size_inches(width, height+1)
     if show:
         figs.show()
     else:
@@ -125,10 +131,10 @@ def plot_topomap_from_df(df, info, user_id, event, win_size):
     figs.suptitle(f'{user_id}: {user_id_to_name[user_id]} \t {tag_to_desc[event]} \t time={tmin}')
     width, height = figs.get_size_inches()
     figs.set_size_inches(width, height + 0.8)
-    target_path = f'../output/music_and_eeg/norm/{user_id}_{user_id_to_name[user_id]}/img/'
+    target_path = f'{RESULTS_PATH}/{user_id}_{user_id_to_name[user_id]}/img/stimulus_level/topomap/'
     os.makedirs(target_path, exist_ok=True)
     figs.savefig(f'{target_path}/{event}_{tag_to_desc[event]}_{tmin}_{tmax}.png')
-
+    plt.close()
 
 def plot_dynamic_topomap(reader, baseline):
     win_size = 5
@@ -144,7 +150,8 @@ def plot_dynamic_topomap(reader, baseline):
         norm_feats = []
         for feat in feats:
             _res = (feat - baseline) / baseline
-            _res.drop(index=['VEO', 'Status'], inplace=True)
+            # _res.drop(index=['VEO', 'Status'], inplace=True) # if edf
+            _res.drop(index=['VEO'], inplace=True)
             # _res = _res.loc[occipital_region]
             norm_feats.append(
                 _res.values
@@ -152,7 +159,7 @@ def plot_dynamic_topomap(reader, baseline):
         channel_name = list(feats[0].index)
         features = list(feats[0].columns)
         channel_name.remove('VEO')
-        channel_name.remove('Status')
+        # channel_name.remove('Status')
         feats_arr = np.array(norm_feats)
         feats_arr = remove_outliers(feats_arr, axis=0, max_deviations=2)
         # 为了方便跨被试的比较，将所有特征在时间轴做了minmax_scale
@@ -161,7 +168,7 @@ def plot_dynamic_topomap(reader, baseline):
         feats_arr = feats_arr.reshape((n_times, -1))
         feats_arr = minmax_scale(X=feats_arr, feature_range=(-1, 1))
         _data = feats_arr.reshape(org_shape)
-        print("max:", np.max(_data), "min:", np.min(_data))
+        # print("max:", np.max(_data), "min:", np.min(_data))
         norm_feats = []
         for single_win in _data:
             _df = pd.DataFrame(single_win, index=channel_name, columns=features)
@@ -190,7 +197,7 @@ def output_avg_band_power_per_channel(reader, baseline, cmp_in_diff_stimulus=Fal
         norm_feats = []
         for feat in feats:
             _res = (feat - baseline) / baseline
-            _res.drop(index=['VEO', 'Status'], columns=['FreqRes', 'Relative'], inplace=True)
+            _res.drop(index=['VEO'], columns=['FreqRes', 'Relative'], inplace=True)
             # _res = _res.loc[occipital_region]
             norm_feats.append(
                 _res.values
@@ -222,7 +229,15 @@ def output_avg_band_power_per_channel(reader, baseline, cmp_in_diff_stimulus=Fal
         file_name = f'{params_dic["stimulus"]}_{tag_to_desc[params_dic["stimulus"]]}'
         if not cmp_in_diff_stimulus:
             file_name = 'org_'+file_name
-        figs.savefig(f'{target_path}/{file_name}.png')
+
+        # row oriented
+        # figs.savefig(f'{target_path}/{file_name}.png')
+
+        # column oriented
+        store_path =f'{target_path}/column_oriented/'
+        os.makedirs(store_path, exist_ok=True)
+        figs.savefig(f'{store_path}/{file_name}.png')
+
     if not cmp_in_diff_stimulus:
         total_axes_lims_info_df.to_csv(f'{target_path}/axesLimitsInDiffBands.csv')
 
@@ -244,7 +259,7 @@ def output_avg_band_power(reader, baseline):
         norm_feats = []
         for feat in feats:
             _res = (feat - baseline) / baseline
-            _res.drop(index=['VEO', 'Status'], inplace=True)
+            _res.drop(index=['VEO'], inplace=True)
             _res = _res.loc[occipital_region]
             norm_feats.append(
                 _res.values
@@ -283,21 +298,26 @@ def plot_span(anno, ax, user_id):
 
 
 for user_id in user_id_list:
+# for user_id in ['p17']:
     # user_id = 'p03'
     # get_colorbar_limits(user_id)
     print(f"**********当前user id{user_id}**************")
-    reader = EDFReader(
-        f'{EDF_PATH}/{user_id}.edf',
-        f'{LOG_PATH}/{user_id}.csv',
-        offset=60 * 5,  # 5 mins
+    # reader = EDFReader(
+    #     f'{EDF_PATH}/{user_id}.edf',
+    #     f'{LOG_PATH}/{user_id}.csv',
+    #     offset=60 * 5,  # 5 mins
+    # )
+    reader = FIFReader(
+        f'{FIF_PATH}/{user_id}.fif',
     )
 
-    reader.raw.set_channel_types({'VEO': 'eog'})
-    ten_twenty_montage = mne.channels.make_standard_montage('standard_1020')
-    reader.raw.set_montage(ten_twenty_montage)
     baseline = get_baseline(user_id)
-    # plot_dynamic_topomap(reader, baseline)
+    plot_dynamic_topomap(reader, baseline)
     # output_avg_band_power(reader, baseline)
+
     # for cmp_in_diff_stimulus in [False, True]:
-    cmp_in_diff_stimulus = True
-    output_avg_band_power_per_channel(reader, baseline, cmp_in_diff_stimulus)
+    #     output_avg_band_power_per_channel(reader, baseline, cmp_in_diff_stimulus)
+
+    # for cmp_in_diff_stimulus in [False, True]:
+    # cmp_in_diff_stimulus = True
+    # output_avg_band_power_per_channel(reader, baseline, cmp_in_diff_stimulus)

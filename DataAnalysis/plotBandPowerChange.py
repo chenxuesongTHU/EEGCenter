@@ -101,7 +101,8 @@ def plot_span(anno, ax, user_id):
 
 
 
-for user_id in user_id_list[11:]:
+# for user_id in user_id_list[11:]:
+for user_id in ['p17']:
     print(f"**********当前user id{user_id}**************")
     reader = EDFReader(
         f'{EDF_PATH}/{user_id}.edf',

@@ -34,7 +34,15 @@ def get_user_ratings(user_id, stimulus_id=None):
             return dic
     return res
 
+def get_sound_order(user_id):
+    root_path = "/Users/cxs/project/EEGCenterV2/EEGCenter"
+    sound_orders_df = pd.read_csv(f'{root_path}/data/EEGAndMusic/ratings/soundsOrder.csv')
+    questionnaires = pd.read_csv(f'{root_path}/data/EEGAndMusic/ratings/questionnaires.csv')
+    sound_order = sound_orders_df[sound_orders_df['被试编号'] == user_id]
+    sound_order = sound_order.values.squeeze()[3:]
+    return list(sound_order)
 
 if __name__ == '__main__':
-    res = get_user_ratings('p01')
+    # res = get_user_ratings('p01')
+    res = get_sound_order('p01')
     print()
