@@ -9,7 +9,14 @@
 """
 # !/usr/bin/env python
 # -*- encoding: utf-8 -*-
+import pickle
+
+from scipy.stats import stats
 from sklearn.preprocessing import minmax_scale
+
+from DataAnalysis.Visualization.utils import plot_topomap
+from Scripts.tmp.generate_special_time_info import get_special_time_spans
+from src.utils import is_equal_variance
 
 """
 @File        :   plotBandPowerChange  
@@ -25,7 +32,7 @@ import matplotlib
 
 from Feature import TimeFrequency
 from Feature.utils import remove_outliers
-from Reader import EDFReader, FIFReader
+from Reader import FIFReader
 
 # matplotlib.use('MacOSX')
 matplotlib.use('TkAgg')
@@ -43,6 +50,7 @@ def get_baseline(user_id):
         index_col=0
     )
     return df
+
 
 def get_colorbar_limits(user_id):
     target_path = f'{RESULTS_PATH}/{user_id}_{user_id_to_name[user_id]}/img/stimulus_level/norm_among_stimulus'
@@ -62,13 +70,12 @@ def get_colorbar_limits(user_id):
 
 
 def plot_static_topomap_from_df(df, info, params, show=True, cmp_in_diff_stimulus=False):
-
     if cmp_in_diff_stimulus:
         colorbar_range = get_colorbar_limits(params['user_id'])
 
     n_axes = len(bands_name)
     # figs, axes = plt.subplots(1, n_axes, figsize=(2 * n_axes, 1.5)) # 横向
-    figs, axes = plt.subplots(n_axes, 1, figsize=(3, 2 * n_axes))   # 纵向
+    figs, axes = plt.subplots(n_axes, 1, figsize=(3, 2 * n_axes))  # 纵向
     colorbar_info = defaultdict(lambda: [])
     for ax, (key, freq_range) in zip(axes, bands_freqs.items()):
 
@@ -76,8 +83,8 @@ def plot_static_topomap_from_df(df, info, params, show=True, cmp_in_diff_stimulu
         vmax = None
 
         if cmp_in_diff_stimulus:
-            vmin=colorbar_range[key]['low']
-            vmax=colorbar_range[key]['high']
+            vmin = colorbar_range[key]['low']
+            vmax = colorbar_range[key]['high']
 
         mne.viz.plot_topomap(df[key], info, axes=ax,
                              vmin=vmin, vmax=vmax,
@@ -136,7 +143,8 @@ def plot_topomap_from_df(df, info, user_id, event, win_size):
     figs.savefig(f'{target_path}/{event}_{tag_to_desc[event]}_{tmin}_{tmax}.png')
     plt.close()
 
-def plot_dynamic_topomap(reader, baseline):
+
+def plot_dynamic_topomap(reader, baseline, user_id):
     win_size = 5
 
     for stimulus in desc_to_tag.values():
@@ -174,12 +182,17 @@ def plot_dynamic_topomap(reader, baseline):
             _df = pd.DataFrame(single_win, index=channel_name, columns=features)
             norm_feats.append(_df)
 
+        dump_dic = {}
         for time, feat_df in zip(tf.times, norm_feats):
-            feat_df.index.name = time - win_size / 2
-            plot_topomap_from_df(feat_df, info, user_id, stimulus, win_size)
+            start_time = int(time - win_size / 2)
+            feat_df.index.name = start_time
+            # plot_topomap_from_df(feat_df, info, user_id, stimulus, win_size)
+            dump_dic[start_time] = feat_df    # start time -> feat df
+            # 用于保存结果
+        pickle.dump(dump_dic, open(f'{RESULTS_PATH}/dumps/topomap/{user_id}_{stimulus}_{tag_to_desc[stimulus]}.pkl', 'wb'))
 
 
-def output_avg_band_power_per_channel(reader, baseline, cmp_in_diff_stimulus=False):
+def output_avg_band_power_per_channel(user_id, reader, baseline, cmp_in_diff_stimulus=False):
     target_path = f'{RESULTS_PATH}/{user_id}_{user_id_to_name[user_id]}/img/stimulus_level/norm_among_stimulus'
     total_axes_lims_info_df = pd.DataFrame()
 
@@ -187,7 +200,7 @@ def output_avg_band_power_per_channel(reader, baseline, cmp_in_diff_stimulus=Fal
         event_raw = reader.get_event_raw(stimulus)
         info = event_raw.info
         # tf = TimeFrequency(reader.raw,  win_sec=5, relative=False, mode='psd')   # todo
-        tf = TimeFrequency(event_raw, win_sec=4, relative=False)  # todo
+        tf = TimeFrequency(event_raw, win_sec=5, relative=False)  # todo
         # tf = TimeFrequency(reader.raw, 5, relative=False)
         feats = tf.get_band_power()
 
@@ -228,13 +241,13 @@ def output_avg_band_power_per_channel(reader, baseline, cmp_in_diff_stimulus=Fal
         os.makedirs(target_path, exist_ok=True)
         file_name = f'{params_dic["stimulus"]}_{tag_to_desc[params_dic["stimulus"]]}'
         if not cmp_in_diff_stimulus:
-            file_name = 'org_'+file_name
+            file_name = 'org_' + file_name
 
         # row oriented
         # figs.savefig(f'{target_path}/{file_name}.png')
 
         # column oriented
-        store_path =f'{target_path}/column_oriented/'
+        store_path = f'{target_path}/column_oriented/'
         os.makedirs(store_path, exist_ok=True)
         figs.savefig(f'{store_path}/{file_name}.png')
 
@@ -243,6 +256,7 @@ def output_avg_band_power_per_channel(reader, baseline, cmp_in_diff_stimulus=Fal
 
 
 def output_avg_band_power(reader, baseline):
+    # 不区分位置导出用户听同一声音时不同波段的枕区能量
     total_res = []
     for stimulus in desc_to_tag.values():
         event_raw = reader.get_event_raw(stimulus)
@@ -297,27 +311,129 @@ def plot_span(anno, ax, user_id):
         idx += 1
 
 
-for user_id in user_id_list:
-# for user_id in ['p17']:
-    # user_id = 'p03'
-    # get_colorbar_limits(user_id)
-    print(f"**********当前user id{user_id}**************")
-    # reader = EDFReader(
-    #     f'{EDF_PATH}/{user_id}.edf',
-    #     f'{LOG_PATH}/{user_id}.csv',
-    #     offset=60 * 5,  # 5 mins
-    # )
+def time_overlying_main():
+    # 弃用，没有做baseline和min max，实现见time_overlying_main_v2()
+    special_times = get_special_time_spans()
+    win_size = 5
+    user_y_lims = defaultdict(lambda: None)
+    user_y_lims = {
+        'p17': 29.73743738907362, 'p16': 26.48677555031468, 'p13': 73.71093759112559, 'p02': 342.5012314346288,
+        'p09': 431.59542349504204, 'p11': 216.35120453721947, 'p04': 13.237494593784943, 'p07': 65.57241921634511}
+
+    for user_id, user_info in special_times.items():
+        user_level_y_lim_list = []
+        for sound_id, sound_info in user_info.items():
+            reader = FIFReader(
+                f'{FIF_PATH}/{user_id}.fif',
+            )
+            event_raw = reader.get_event_raw(sound_id)
+
+            diff_time_feat = []
+            res_feats = None
+            for _band, _times in sound_info.items():
+                for start_time in _times:
+                    end_time = start_time + win_size
+                    _tmp_raw = event_raw.copy().crop(tmin=start_time, tmax=end_time, include_tmax=True)
+                    tf = TimeFrequency(_tmp_raw, win_sec=win_size, relative=False)  # todo
+                    # tf = TimeFrequency(reader.raw, 5, relative=False)
+                    feats = tf.get_band_power()[0]
+                    if type(res_feats) == type(None):
+                        res_feats = feats
+                    else:
+                        res_feats += feats
+                res_feats.drop(index=['VEO'], columns=['FreqRes', 'Relative', 'TotalAbsPow'], inplace=True)
+                res_feats /= len(_times)
+                col_name = _band.split('_')[0]
+                feats_arr = minmax_scale(X=res_feats, feature_range=(-1, 1))
+                res_feats = pd.DataFrame(feats_arr, columns=res_feats.columns, index=res_feats.index)
+                col_name = col_name.capitalize()
+                title = f"{user_id}_{user_id_to_name[user_id]} {tag_to_desc[sound_id]} {_band}"
+                figs = plot_topomap(res_feats, event_raw.info, col_name,
+                                    show=False, title=title,
+                                    vmax=1, vmin=-1,
+                                    )
+                low, high = figs.axes[0].CB.lims
+                user_level_y_lim_list.append(high)
+                figs.savefig(f"{RESULTS_PATH}/time_overlying/img_scale/{title}.png", format='png')
+        user_y_lims[user_id] = max(user_level_y_lim_list)
+    print(dict(user_y_lims))
+
+def time_overlying_main_v2():
+
+    action = "cmp_peak_valley"      # {plot | cmp_peak_valley}
+    special_times = get_special_time_spans()
+
     reader = FIFReader(
-        f'{FIF_PATH}/{user_id}.fif',
+        f'{FIF_PATH}/p10.fif',
     )
+    info = reader.raw.info
+    peak_and_valley = defaultdict(lambda: defaultdict(lambda: []))  # channel -> {peak | valley} -> list
+    for user_id, user_info in special_times.items():
+        for sound_id, sound_info in user_info.items():
 
-    baseline = get_baseline(user_id)
-    plot_dynamic_topomap(reader, baseline)
-    # output_avg_band_power(reader, baseline)
+            with open(f'{RESULTS_PATH}/dumps/topomap/{user_id}_{sound_id}_{tag_to_desc[sound_id]}.pkl', 'rb') as _file:
+                feats_src = pickle.load(_file)
+            res_feats = None
+            for _band, _times in sound_info.items():
+                if sound_id == 'A2':
+                    print("debug")
+                # _times = [100]
+                for start_time in _times:
+                    feats = feats_src[start_time]
+                    if type(res_feats) == type(None):
+                        res_feats = feats
+                    else:
+                        res_feats += feats
+                # res_feats.drop(index=['VEO'], columns=['FreqRes', 'Relative', 'TotalAbsPow'], inplace=True)
+                res_feats /= len(_times)
+                col_name = _band.split('_')[0]
+                col_name = col_name.capitalize()
+                if action == "plot":
+                    title = f"{user_id}_{user_id_to_name[user_id]} {tag_to_desc[sound_id]} {_band}"
+                    figs = plot_topomap(res_feats, info, col_name,
+                                        show=False, title=title,
+                                        vmax=1, vmin=-1,
+                                        )
+                    figs.savefig(f"{RESULTS_PATH}/time_overlying/img_scale/{title}.png", format='png')
+                    # figs.savefig(f"{RESULTS_PATH}/time_overlying/img_scale/tmp.png", format='png')
+                if action == "cmp_peak_valley":
+                    for _chan in res_feats.index:
+                        peak_and_valley[_chan][_band].append(res_feats.loc[_chan, col_name])
 
-    # for cmp_in_diff_stimulus in [False, True]:
-    #     output_avg_band_power_per_channel(reader, baseline, cmp_in_diff_stimulus)
+    for _chan, _pairs in peak_and_valley.items():
+        peak = 'alpha_peak'
+        valley = 'alpha_valley'
+        _peak_list = _pairs[peak]
+        _valley_list = _pairs[valley]
+        equal_var = is_equal_variance(_peak_list, _valley_list)
+        print(_chan ,stats.ttest_ind(_peak_list, _valley_list, equal_var=equal_var))
 
-    # for cmp_in_diff_stimulus in [False, True]:
-    # cmp_in_diff_stimulus = True
-    # output_avg_band_power_per_channel(reader, baseline, cmp_in_diff_stimulus)
+
+def main():
+    for user_id in user_id_list:
+    # for user_id in ['p17']:
+        # user_id = 'p03'
+        # get_colorbar_limits(user_id)
+        print(f"**********当前user id{user_id}**************")
+        # reader = EDFReader(
+        #     f'{EDF_PATH}/{user_id}.edf',
+        #     f'{LOG_PATH}/{user_id}.csv',
+        #     offset=60 * 5,  # 5 mins
+        # )
+        reader = FIFReader(
+            f'{FIF_PATH}/{user_id}.fif',
+        )
+
+        baseline = get_baseline(user_id)
+        plot_dynamic_topomap(reader, baseline, user_id)
+
+        # output_avg_band_power(reader, baseline)
+
+        # for cmp_in_diff_stimulus in [False, True]:
+        #     output_avg_band_power_per_channel(user_id, reader, baseline, cmp_in_diff_stimulus)
+
+
+if __name__ == '__main__':
+    # time_overlying_main()
+    time_overlying_main_v2()
+    # main()

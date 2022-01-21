@@ -15,7 +15,7 @@ from scipy.stats import pearsonr
 
 from Feature import TimeFrequency
 from Feature.utils import remove_outliers
-from Reader import EDFReader
+from Reader import EDFReader, FIFReader
 
 # matplotlib.use('MacOSX')
 matplotlib.use('TkAgg')
@@ -25,12 +25,15 @@ from src.constants import *
 
 user_id = 'p10'
 # stimulus = 'B1'
-def signal_move_on_time_axis():
+def signal_move_on_time_axis(fixed_channel, cmp_channel):
     for user_id in user_id_list:
-        reader = EDFReader(
-            f'{EDF_PATH}/{user_id}.edf',
-            f'{LOG_PATH}/{user_id}.csv',
-            offset=60 * 5,  # 5 mins
+        # reader = EDFReader(
+        #     f'{EDF_PATH}/{user_id}.edf',
+        #     f'{LOG_PATH}/{user_id}.csv',
+        #     offset=60 * 5,  # 5 mins
+        # )
+        reader = FIFReader(
+            f'{FIF_PATH}/{user_id}.fif',
         )
 
         raw = reader.raw
@@ -46,8 +49,8 @@ def signal_move_on_time_axis():
                 tmp_raw = raw.copy().crop(tmin=0, tmax=60*5)
             else:
                 tmp_raw = reader.get_event_raw(stimulus)
-            oz_signal = tmp_raw.get_data(picks=['Oz']).squeeze()
-            Fpz_signal = tmp_raw.get_data(picks=['Fpz']).squeeze()
+            oz_signal = tmp_raw.get_data(picks=[fixed_channel]).squeeze()
+            Fpz_signal = tmp_raw.get_data(picks=[cmp_channel]).squeeze()
             sfreq = tmp_raw.info['sfreq']
             obs_samps = int(3 * 60 * sfreq) # 样本比较时长 3 min
             time_bias = int(2 * sfreq)      # 前后 1 s
@@ -64,7 +67,7 @@ def signal_move_on_time_axis():
 
         # figs.legend()
         # plt.show()
-        plt.savefig(f'{RESULTS_PATH}/{user_id}_{user_id_to_name[user_id]}/img/Oz_Fpz_correlation.pdf', format='pdf')
+        plt.savefig(f'{RESULTS_PATH}/{user_id}_{user_id_to_name[user_id]}/img/{fixed_channel}_{cmp_channel}_correlation.pdf', format='pdf')
 
         # eeg_signals = raw.get_data().squeeze()
         # df = pd.DataFrame(np.corrcoef(eeg_signals), index=raw.info.ch_names, columns=raw.info.ch_names)
@@ -74,14 +77,16 @@ def signal_move_on_time_axis():
 def cmp_brain_signals_with_specific_channel(channel_name):
 
     for user_id in user_id_list:
-        reader = EDFReader(
-            f'{EDF_PATH}/{user_id}.edf',
-            f'{LOG_PATH}/{user_id}.csv',
-            offset=60 * 5,  # 5 mins
+        # reader = EDFReader(
+        #     f'{EDF_PATH}/{user_id}.edf',
+        #     f'{LOG_PATH}/{user_id}.csv',
+        #     offset=60 * 5,  # 5 mins
+        # )
+        reader = FIFReader(
+            f'{FIF_PATH}/{user_id}.fif',
         )
-
         raw = reader.raw
-        raw = raw.drop_channels(['VEO', 'Status'])
+        raw = raw.drop_channels(['VEO'])
 
         plot_target = ['rest'] + list(desc_to_tag.values())
         tag_to_desc['rest'] = 'rest'
@@ -115,18 +120,19 @@ def cmp_brain_signals_with_specific_channel(channel_name):
             df.columns = [tick]
             res = pd.concat([res, df], axis=1)
 
-        # res.sort_values(by=[rest_mean_name], inplace=True)
-        res.sort_index(0, inplace=True)
+        res.sort_values(by=[rest_mean_name], inplace=True)
+        # res.sort_index(0, inplace=True)
         plt.figure(figsize=(5, 16))
         ax = sns.heatmap(res, vmin=0, vmax=1, annot=True, cmap='rocket_r', annot_kws={'fontsize': 8}, fmt='.2f')
         n_y_ticks, n_x_ticks = res.shape
         ax.set_ylim([-0.5, n_y_ticks + 0.5])
         plt.savefig(
-            # f'{RESULTS_PATH}/{user_id}_{user_id_to_name[user_id]}/img/interval_{channel_name}_and_others_correlation.pdf',
-            f'{RESULTS_PATH}/{user_id}_{user_id_to_name[user_id]}/img/interval_{channel_name}_and_others_correlation_sort_by_channel_name.pdf',
+            f'{RESULTS_PATH}/{user_id}_{user_id_to_name[user_id]}/img/interval_{channel_name}_and_others_correlation_sort_by_value.pdf',
+            # f'{RESULTS_PATH}/{user_id}_{user_id_to_name[user_id]}/img/interval_{channel_name}_and_others_correlation_sort_by_channel_name.pdf',
             format='pdf')
         plt.close()
 
 
-# signal_move_on_time_axis()
+# signal_move_on_time_axis('O1', 'O2')
+# signal_move_on_time_axis('O1', 'O1')
 cmp_brain_signals_with_specific_channel('Oz')

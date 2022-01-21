@@ -17,14 +17,25 @@ from Reader import EDFReader
 matplotlib.use('TkAgg')
 import numpy as np
 from src.sleep.constants import *
+from src.constants import *
+from Reader.FIFReader import FIFReader
 import mne
 
 # plt.ion()
 # user_id = 'p10'
-user_id = 'p03'
+user_id = 'p01'
+# reader = EDFReader(
+#     f'./data/EEGAndMusic/{user_id}-sound-1202_EEG_cleaned.edf',
+#     f'/Users/cxs/project/EEGCenterV2/EEGCenter/data/EEGAndMusic/annotations/new/{user_id}-sound-1202.csv'
+# )
+reader = FIFReader(
+    f'{FIF_PATH}/{user_id}.fif',
+)
+tmp_path = f'{EDF_PATH}/../edf/'
 reader = EDFReader(
-    f'./data/EEGAndMusic/{user_id}-sound-1202_EEG_cleaned.edf',
-    f'/Users/cxs/project/EEGCenterV2/EEGCenter/data/EEGAndMusic/annotations/new/{user_id}-sound-1202.csv'
+    f'{tmp_path}/{user_id}.edf',
+    f'{LOG_PATH}/{user_id}.csv',
+    offset=60 * 5,  # 5 mins
 )
 
 raw = reader.raw

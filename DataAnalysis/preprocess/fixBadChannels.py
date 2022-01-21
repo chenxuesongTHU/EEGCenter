@@ -34,12 +34,13 @@ if __name__ == '__main__':
     file_path = '../../data/EEGAndMusic/bad_channels.csv'
     user_id = user_id_list[0]
     for user_id in user_id_list:
+    # for user_id in ['p01', 'p02', 'p03', 'p06']:
         # user_id = 'p02'
         bad_channels = read_bad_channels(file_path, user_id)
         sound_order = get_sound_order(user_id)
 
         src_reader = EDFReader(
-            f'{DATA_PATH}/datasets/edfV3/old/{user_id}.edf',
+            f'{DATA_PATH}/datasets/edfV3/{user_id}.edf',
             f'{LOG_PATH}/{user_id}.csv',
             offset=60 * 5,  # 5 mins
         )

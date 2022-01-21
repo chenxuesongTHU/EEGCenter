@@ -22,9 +22,9 @@ def image_concat(path):
     # 存储所有图片文件名称
     for root, dirs, files in os.walk(path):
         for f in files:
-            if f == 'all_sound.png':
+            if f == 'all_sound.png' or f.startswith('._') or f.startswith('org'):
                 continue
-            if f.startswith('._') == False:
+            else:
                 images.append(f)
     images = sorted(images)
     for i in range(len(images)):

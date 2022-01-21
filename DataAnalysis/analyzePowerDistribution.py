@@ -20,7 +20,7 @@ import os
 import mne
 
 
-def plot_topomap(df, info, show=True, title=None, cmp_in_diff_stimulus=False):
+def plot_topomap(df, info, show=True, title=None):
     figs, ax = plt.subplots()  # 纵向
     ch_names = info['ch_names'].copy()
     ch_names.remove('VEO')

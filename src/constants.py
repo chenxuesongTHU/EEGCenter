@@ -25,10 +25,19 @@ bands_freqs = {
 user_id_list = ['p01', 'p02', 'p03', 'p04', 'p05', 'p06', 'p07',
                 'p08', 'p09', 'p10', 'p11', 'p13', 'p14', 'p16', 'p17']
 
+# user_id_list = ['p01', 'p02', 'p03', 'p06']
+
 occipital_region = ['O1', 'O2', 'PO3', 'PO4', 'PO7', 'PO8', 'POz', 'Oz']
 
 DATA_PATH = "/Volumes/ExtremeSSD/EEGAndSound/"
-EDF_PATH = "/Volumes/ExtremeSSD/EEGAndSound/datasets/edfV3/new/not_used"
+EDF_PATH = "/Volumes/ExtremeSSD/EEGAndSound/datasets/edfV3/"
 FIF_PATH = "/Volumes/ExtremeSSD/EEGAndSound/datasets/fifV3/"
+ECG_PATH = "/Volumes/ExtremeSSD/EEGAndSound/datasets/ecg/"
+PPG_PATH = "/Volumes/ExtremeSSD/EEGAndSound/datasets/ppg/"
 LOG_PATH = "/Volumes/ExtremeSSD/EEGAndSound/datasets/useful_log/"
 RESULTS_PATH = "/Volumes/ExtremeSSD/EEGAndSound/results/"
+
+
+RAW_ECG_PATH = "/Volumes/ExtremeSSD/EEGAndSound/raw datasets/ecg/"
+RAW_EEG_PATH = "/Volumes/ExtremeSSD/EEGAndSound/raw datasets/eeg/"
+RAW_TOBII_PATH = "/Volumes/ExtremeSSD/EEGAndSound/raw datasets/log/"

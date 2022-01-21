@@ -10,6 +10,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from DataAnalysis.SleepAid.constants import *
+import mne
 
 def plot_stage_span(ax, anno, start_sample_id):
     '''
@@ -76,3 +77,28 @@ def plot_feat_change(feats, feature_name, output_path=None, label=None):
         plt.show()
     else:
         pass
+
+
+def plot_topomap(df, info, col_name="", show=True, title=None, vmax=None, vmin=None):
+
+    # remove VEO
+    if 'VEO' in df.index:
+        df.drop(index=['VEO'], inplace=True)
+    figs, ax = plt.subplots()  # 纵向
+    ch_names = info['ch_names'].copy()
+    ch_names.remove('VEO')
+    if 'Status' in ch_names:
+        ch_names.remove('Status')
+    mne.viz.plot_topomap(df[col_name], info, axes=ax,
+                         names=ch_names,
+                         vmin=vmin,
+                         vmax=vmax,
+                         show_names=True,
+                         show=False)
+    # _plot_topomap_multi_cbar(df[key], info, ax=ax, title=None, colorbar=True)
+    ax.set_title(title)
+
+    if show:
+        figs.show()
+    else:
+        return figs

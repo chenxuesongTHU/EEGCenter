@@ -21,7 +21,7 @@ import seaborn as sns
 
 from Feature import TimeFrequency
 from Feature.utils import remove_outliers
-from Reader import EDFReader
+from Reader import EDFReader, FIFReader
 
 # matplotlib.use('MacOSX')
 matplotlib.use('TkAgg')
@@ -101,18 +101,17 @@ def plot_span(anno, ax, user_id):
 
 
 
-# for user_id in user_id_list[11:]:
-for user_id in ['p17']:
+for user_id in user_id_list:
+# for user_id in ['p17']:
     print(f"**********当前user id{user_id}**************")
-    reader = EDFReader(
-        f'{EDF_PATH}/{user_id}.edf',
-        f'{LOG_PATH}/{user_id}.csv',
-        offset=60 * 5,  # 5 mins
+    # reader = EDFReader(
+    #     f'{EDF_PATH}/{user_id}.edf',
+    #     f'{LOG_PATH}/{user_id}.csv',
+    #     offset=60 * 5,  # 5 mins
+    # )
+    reader = FIFReader(
+        f'{FIF_PATH}/{user_id}.fif',
     )
-
-    reader.raw.set_channel_types({'VEO': 'eog'})
-    ten_twenty_montage = mne.channels.make_standard_montage('standard_1020')
-    reader.raw.set_montage(ten_twenty_montage)
 
     win_size = 4
 
@@ -126,7 +125,7 @@ for user_id in ['p17']:
     _res = None
     for feat in feats:
         _res = (feat - baseline) / baseline
-        _res.drop(index=['VEO', 'Status'], columns=['FreqRes', 'Relative'], inplace=True)
+        _res.drop(index=['VEO'], columns=['FreqRes', 'Relative'], inplace=True)
 
         # 仅使用枕区
         _res = _res.loc[occipital_region]
