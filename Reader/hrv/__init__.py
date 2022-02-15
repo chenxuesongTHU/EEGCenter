@@ -9,3 +9,4 @@
 """
 
 from .hrv_reader import read_ecg_file
+from .hrv_reader import read_ppg_and_peak

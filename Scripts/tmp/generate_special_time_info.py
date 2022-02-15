@@ -20,8 +20,8 @@ def get_sound_id(sound):
     sys.exit(-1)
 
 
-def get_special_time_spans():
-    file = open(f'{DATA_PATH}/data/timeAlignment.txt', 'r')
+def get_special_time_spans(stage='all'):
+    file = open(f'{DATA_PATH}/data/timeAlignment-{stage}.txt', 'r')
     # user id -> sound id -> band name -> list
     special_time_spans = defaultdict(lambda:
                                      defaultdict(lambda:
@@ -55,5 +55,5 @@ def get_special_time_spans():
 
     return special_time_spans
 
-get_special_time_spans()
+# get_special_time_spans()
 

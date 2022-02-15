@@ -45,4 +45,4 @@ def get_sound_order(user_id):
 if __name__ == '__main__':
     # res = get_user_ratings('p01')
     res = get_sound_order('p01')
-    print()
+    print(res)

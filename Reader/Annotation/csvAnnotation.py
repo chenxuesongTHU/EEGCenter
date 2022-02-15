@@ -19,5 +19,19 @@ class csvAnnotation(BaseAnnotation):
         self._anno = mne.Annotations(onset=df['startTime'],
                                duration=df['duration'],
                                description=df['epoch'])
+        self.df = df.set_index('epoch')
+
+
+    def get_timestamp_by_stimuli(self, stimuli_id):
+
+        res = {
+            'start_time': self.df.loc[stimuli_id, 'startTime'],
+            'end_time': self.df.loc[stimuli_id, 'endTime'],
+            'duration': self.df.loc[stimuli_id, 'duration'],
+            'relax_start_time': self.df.loc[stimuli_id, 'relax_startTime'],
+            'relax_end_time': self.df.loc[stimuli_id, 'relax_endTime']
+        }
+
+        return res
 
 

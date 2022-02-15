@@ -33,9 +33,9 @@ def visual_peaks():
             plt.show()
 
 def plot_ppg():
-    for user_id in user_ids[-3:-2]:
+    for user_id in user_ids[2:]:
         path = ECG_PATH + f'{user_id}.pulse'
-        path = '../../data/Pulse/p01.pulse'
+        # path = '../../data/Pulse/p01.pulse'
         baseline, data = read_ecg_file(path)
         for _res in [baseline, data]:
 
@@ -51,9 +51,10 @@ def store_peaks():
     for user_id in user_ids:
         path = ECG_PATH + f'{user_id}.pulse'
         baseline, data = read_ecg_file(path)
-        output_file = open(f"{PPG_PATH}/{user_id}.ppg", 'w')
+        output_file = open(f"{PPG_PATH}/minmax/{user_id}.ppg", 'w')
         for _res in [baseline, data]:
-            ppg_signals, ppg_info = nk.ppg_process(_res, sampling_rate=hrv_samp_freq)
+            _minmax_res = minmax_scale(X=_res, feature_range=(-1, 1))
+            ppg_signals, ppg_info = nk.ppg_process(_minmax_res, sampling_rate=hrv_samp_freq)
             _res_s = [str(_) for _ in _res]
             output_file.write(','.join(_res_s))
             output_file.write('\n')
@@ -81,6 +82,6 @@ def store_peaks():
         # print()
 
 if __name__ == '__main__':
-    # store_peaks()
+    store_peaks()
     # visual_peaks()
-    plot_ppg()
+    # plot_ppg()

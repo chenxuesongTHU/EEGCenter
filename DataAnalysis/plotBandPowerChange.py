@@ -10,6 +10,7 @@
 import sys
 
 import pandas as pd
+from scipy.stats import stats
 from sklearn.preprocessing import minmax_scale
 from yasa.spectral import bandpower
 from yasa.others import sliding_window
@@ -100,90 +101,159 @@ def plot_span(anno, ax, user_id):
         idx += 1
 
 
+def plot_diff_band_power_change():
+    '''
+    整个实验过程中，不同波段的能量值随时间的变化情况
+    '''
 
-for user_id in user_id_list:
-# for user_id in ['p17']:
-    print(f"**********当前user id{user_id}**************")
-    # reader = EDFReader(
-    #     f'{EDF_PATH}/{user_id}.edf',
-    #     f'{LOG_PATH}/{user_id}.csv',
-    #     offset=60 * 5,  # 5 mins
-    # )
-    reader = FIFReader(
-        f'{FIF_PATH}/{user_id}.fif',
-    )
-
-    win_size = 4
-
-    tf = TimeFrequency(reader.raw,  win_sec=win_size, relative=False)   # todo
-    # tf = TimeFrequency(event_raw,  win_sec=5, relative=False, mode='psd')   # todo
-    # tf = TimeFrequency(reader.raw, 5, relative=False)
-    feats = tf.get_band_power()
-    baseline = get_baseline(user_id)
-
-    region_feats = []                     # [times, #channles, #feats]
-    _res = None
-    for feat in feats:
-        _res = (feat - baseline) / baseline
-        _res.drop(index=['VEO'], columns=['FreqRes', 'Relative'], inplace=True)
-
-        # 仅使用枕区
-        _res = _res.loc[occipital_region]
-
-        # 选取枕区所有channel的平均值作为枕区特征
-        n_index = _res.shape[0]
-        for column in list(_res.columns):
-            _res.loc[n_index, column] = _res[column].mean()
-        _res.rename({n_index: 'mean'}, axis='index', inplace=True)
-        region_feats.append(
-            np.array(_res.loc['mean'].values)
+    for user_id in user_id_list:
+    # for user_id in ['p17']:
+        print(f"**********当前user id{user_id}**************")
+        # reader = EDFReader(
+        #     f'{EDF_PATH}/{user_id}.edf',
+        #     f'{LOG_PATH}/{user_id}.csv',
+        #     offset=60 * 5,  # 5 mins
+        # )
+        reader = FIFReader(
+            f'{FIF_PATH}/{user_id}.fif',
         )
 
-    channel_name = list(_res.index)
-    feature_name = list(_res.columns)
+        win_size = 4
 
-    region_feats = np.array(region_feats)          # [times, feats]
-    region_feats = remove_outliers(region_feats, axis=0, max_deviations=2)
-    # 为了方便跨被试的比较，将所有特征在时间轴做了minmax_scale
-    # org_shape = region_feats.shape
-    # n_times = region_feats.shape[0]
-    # region_feats = region_feats.reshape((n_times, -1))
-    # region_feats = minmax_scale(X=region_feats, feature_range=(-1, 1))
+        tf = TimeFrequency(reader.raw,  win_sec=win_size, relative=False)   # todo
+        # tf = TimeFrequency(event_raw,  win_sec=5, relative=False, mode='psd')   # todo
+        # tf = TimeFrequency(reader.raw, 5, relative=False)
+        feats = tf.get_band_power()
+        baseline = get_baseline(user_id)
 
-    data = pd.DataFrame(
-        columns=feature_name,
-        data=region_feats,
-        index=tf.times,
-    )
+        region_feats = []                     # [times, #channles, #feats]
+        _res = None
+        for feat in feats:
+            _res = (feat - baseline) / baseline
+            _res.drop(index=['VEO'], columns=['FreqRes', 'Relative'], inplace=True)
 
-    rolling_length = 15
-    data = data.rolling(rolling_length).mean()
+            # 仅使用枕区
+            _res = _res.loc[occipital_region]
 
-    # padding操作：将滑动平均未涉及的值设置为第一个mean值。
-    rolling_start_idx = rolling_length-1
-    for idx in range(rolling_start_idx):
-        data.iloc[idx, :] = data.iloc[rolling_start_idx, :]
+            # 选取枕区所有channel的平均值作为枕区特征
+            n_index = _res.shape[0]
+            for column in list(_res.columns):
+                _res.loc[n_index, column] = _res[column].mean()
+            _res.rename({n_index: 'mean'}, axis='index', inplace=True)
+            region_feats.append(
+                np.array(_res.loc['mean'].values)
+            )
 
-    # z score
-    # from scipy import stats
-    # _data = stats.zscore(data, axis=0)
-    # data = pd.DataFrame(_data, index=data.index, columns=data.columns)
+        channel_name = list(_res.index)
+        feature_name = list(_res.columns)
 
-    interest_band_list = [
-        bands_name,
-        ["Delta", "Theta", "Gamma"],
-        ["Alpha", 'Sigma', 'Beta'],
-    ]
-    for band in bands_name:
-        interest_band_list.append([band])
-    # interest_band = ["Alpha", 'Sigma', 'Beta']
-    for interest_band in interest_band_list:
-        fig, axes = plt.subplots(figsize=(25, 8))
-        sns.lineplot(data=data[interest_band])
-        # axes.set_xticks(tf.times)
-        plot_span(reader.raw.annotations, axes, user_id)
-        root_path = f'{RESULTS_PATH}/{user_id}_{user_id_to_name[user_id]}/all/'
-        os.makedirs(root_path, exist_ok=True)
-        file_name = '_'.join(interest_band)
-        plt.savefig(f"{root_path}/{file_name}.pdf", format='pdf')
+        region_feats = np.array(region_feats)          # [times, feats]
+        region_feats = remove_outliers(region_feats, axis=0, max_deviations=2)
+        # 为了方便跨被试的比较，将所有特征在时间轴做了minmax_scale
+        # org_shape = region_feats.shape
+        # n_times = region_feats.shape[0]
+        # region_feats = region_feats.reshape((n_times, -1))
+        # region_feats = minmax_scale(X=region_feats, feature_range=(-1, 1))
 
+        data = pd.DataFrame(
+            columns=feature_name,
+            data=region_feats,
+            index=tf.times,
+        )
+
+        rolling_length = 15
+        data = data.rolling(rolling_length).mean()
+
+        # padding操作：将滑动平均未涉及的值设置为第一个mean值。
+        rolling_start_idx = rolling_length-1
+        for idx in range(rolling_start_idx):
+            data.iloc[idx, :] = data.iloc[rolling_start_idx, :]
+
+        # z score
+        # from scipy import stats
+        # _data = stats.zscore(data, axis=0)
+        # data = pd.DataFrame(_data, index=data.index, columns=data.columns)
+
+        # interest_band_list = [
+        #     bands_name,
+        #     ["Delta", "Theta", "Gamma"],
+        #     ["Alpha", 'Sigma', 'Beta'],
+        # ]
+        interest_band_list = [
+            bands_name,
+            ["Delta", "Theta", "Gamma"],
+            ["Alpha", 'Sigma', 'Beta'],
+        ]
+        for band in bands_name:
+            interest_band_list.append([band])
+        # interest_band = ["Alpha", 'Sigma', 'Beta']
+        for interest_band in interest_band_list:
+            fig, axes = plt.subplots(figsize=(25, 8))
+            sns.lineplot(data=data[interest_band])
+            # axes.set_xticks(tf.times)
+            plot_span(reader.raw.annotations, axes, user_id)
+            root_path = f'{RESULTS_PATH}/{user_id}_{user_id_to_name[user_id]}/all/'
+            os.makedirs(root_path, exist_ok=True)
+            file_name = '_'.join(interest_band)
+            plt.savefig(f"{root_path}/{file_name}.pdf", format='pdf')
+
+
+def plot_brain_power_change():
+    '''
+    整个实验过程中，全脑的能量变化
+    Returns
+    -------
+    '''
+    for user_id in user_id_list:
+        reader = FIFReader(
+            f'{FIF_PATH}/{user_id}.fif',
+        )
+
+        tf = TimeFrequency(reader.raw, 4)
+        feats = tf.get_band_power()
+        extra_info = 'mean_of_80%'
+        for region in list(brain_region_info.keys())[:1]:
+
+            res = []
+            for feat in feats:
+                feat = feat.loc[brain_region_info[region]]
+                cut_ratio = 0.1
+                start_index = int(len(feat) * cut_ratio)
+                _pow_list = sorted(list(feat['TotalAbsPow']))[start_index: -start_index]
+                res.append(
+                    # feat['All'].mean()
+                    np.mean(_pow_list)
+                )
+
+            # res = stats.zscore(res, axis=0)
+
+            data = pd.DataFrame(
+                columns=[region],
+                data=res,
+                index=tf.times,
+            )
+
+            rolling_length = 15
+            data = data.rolling(rolling_length).mean()
+
+            # padding操作：将滑动平均未涉及的值设置为第一个mean值。
+            rolling_start_idx = rolling_length-1
+            for idx in range(rolling_start_idx):
+                data.iloc[idx, :] = data.iloc[rolling_start_idx, :]
+
+            interest_band = region
+            fig, axes = plt.subplots(figsize=(25, 8))
+            sns.lineplot(data=data[interest_band])
+            # axes.set_xticks(tf.times)
+            plot_span(reader.raw.annotations, axes, user_id)
+            root_path = f'{RESULTS_PATH}/{user_id}_{user_id_to_name[user_id]}/all/'
+            os.makedirs(root_path, exist_ok=True)
+            file_name = interest_band
+            plt.savefig(f"{root_path}/{extra_info}_{file_name}.pdf", format='pdf')
+
+            print()
+    pass
+
+if __name__ == '__main__':
+    # plot_diff_band_power_change()
+    plot_brain_power_change()

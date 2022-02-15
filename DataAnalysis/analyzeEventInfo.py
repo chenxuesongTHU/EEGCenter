@@ -408,6 +408,54 @@ def time_overlying_main_v2():
         equal_var = is_equal_variance(_peak_list, _valley_list)
         print(_chan ,stats.ttest_ind(_peak_list, _valley_list, equal_var=equal_var))
 
+def time_overlying_main_all_users():
+
+    action = "plot"      # {plot | cmp_peak_valley}
+
+    reader = FIFReader(
+        f'{FIF_PATH}/p10.fif',
+    )
+    info = reader.raw.info
+
+    for stage in ['困倦', '入睡', '放松', '清醒']:
+        special_times = get_special_time_spans(stage=stage)
+        for target_band in ['alpha_peak', 'alpha_valley', 'theta_peak']:
+
+            peak_and_valley = defaultdict(lambda: defaultdict(lambda: []))  # channel -> {peak | valley} -> list
+            res_feats = None
+            count = 0
+            for user_id, user_info in special_times.items():
+                for sound_id, sound_info in user_info.items():
+
+                    with open(f'{RESULTS_PATH}/dumps/topomap/{user_id}_{sound_id}_{tag_to_desc[sound_id]}.pkl', 'rb') as _file:
+                        feats_src = pickle.load(_file)
+                    for _band, _times in sound_info.items():
+                        if sound_id == 'A2':
+                            print("debug")
+                        # _times = [100]
+                        if _band != target_band:
+                            continue
+                        for start_time in _times:
+                            feats = feats_src[start_time]
+                            if type(res_feats) == type(None):
+                                res_feats = feats
+                            else:
+                                res_feats += feats
+                            count += 1
+                        # res_feats.drop(index=['VEO'], columns=['FreqRes', 'Relative', 'TotalAbsPow'], inplace=True)
+                if type(res_feats) == type(None):
+                    continue
+                res_feats /= count
+                col_name = target_band.split('_')[0]
+                col_name = col_name.capitalize()
+                if action == "plot":
+                    title = f"{stage} {target_band}"
+                    figs = plot_topomap(res_feats, info, col_name,
+                                        show=False, title=title,
+                                        vmax=1, vmin=-1,
+                                        )
+                    figs.savefig(f"{RESULTS_PATH}/time_overlying/all_users/{title}.png", format='png')
+
 
 def main():
     for user_id in user_id_list:
@@ -435,5 +483,6 @@ def main():
 
 if __name__ == '__main__':
     # time_overlying_main()
-    time_overlying_main_v2()
+    # time_overlying_main_v2()
+    time_overlying_main_all_users()
     # main()

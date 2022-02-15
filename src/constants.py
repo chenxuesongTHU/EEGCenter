@@ -27,8 +27,21 @@ user_id_list = ['p01', 'p02', 'p03', 'p04', 'p05', 'p06', 'p07',
 
 # user_id_list = ['p01', 'p02', 'p03', 'p06']
 
-occipital_region = ['O1', 'O2', 'PO3', 'PO4', 'PO7', 'PO8', 'POz', 'Oz']
+channel_names = [
+    'AF3', 'AF4', 'AF7', 'AF8', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'CP1', 'CP2', 'CP3', 'CP4', 'CP5', 'CP6', 'CPz',
+    'Cz', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'FC1', 'FC2', 'FC3', 'FC4', 'FC5', 'FC6', 'FT10', 'FT7',
+    'FT8', 'FT9', 'Fp1', 'Fp2', 'Fpz', 'Fz', 'O1', 'O2', 'Oz', 'P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'PO3',
+    'PO4', 'PO7', 'PO8', 'POz', 'Pz', 'T7', 'T8', 'TP7', 'TP8', 'VEO']
 
+occipital_region = ['O1', 'O2', 'PO3', 'PO4', 'PO7', 'PO8', 'POz', 'Oz']
+frontal_region = ['Fp1', 'Fp2', 'Fpz']
+temporal_region = ['FT10', 'FT7', 'FT8', 'FT9', 'T7', 'T8', 'TP7', 'TP8']
+brain_region_info = {
+    'All': channel_names,
+    'Frontal': frontal_region,
+    'Occipital': occipital_region,
+    'Temporal': temporal_region,
+}
 DATA_PATH = "/Volumes/ExtremeSSD/EEGAndSound/"
 EDF_PATH = "/Volumes/ExtremeSSD/EEGAndSound/datasets/edfV3/"
 FIF_PATH = "/Volumes/ExtremeSSD/EEGAndSound/datasets/fifV3/"
@@ -36,7 +49,6 @@ ECG_PATH = "/Volumes/ExtremeSSD/EEGAndSound/datasets/ecg/"
 PPG_PATH = "/Volumes/ExtremeSSD/EEGAndSound/datasets/ppg/"
 LOG_PATH = "/Volumes/ExtremeSSD/EEGAndSound/datasets/useful_log/"
 RESULTS_PATH = "/Volumes/ExtremeSSD/EEGAndSound/results/"
-
 
 RAW_ECG_PATH = "/Volumes/ExtremeSSD/EEGAndSound/raw datasets/ecg/"
 RAW_EEG_PATH = "/Volumes/ExtremeSSD/EEGAndSound/raw datasets/eeg/"
