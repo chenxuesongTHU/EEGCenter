@@ -25,7 +25,8 @@ from src.sleep.utils import get_user_ratings, get_sound_order
 from neurokit2.hrv.hrv_utils import _hrv_get_rri
 
 user_id_list = list(start_time_bias.keys())
-
+user_id_list = hrv_user_id_list[-2:] + ['p15', 'p17']
+user_id_list = ['p17']
 plt.rcParams['figure.figsize'] = [14, 11]  # Bigger images
 
 
@@ -239,7 +240,12 @@ def plot_hrv_feat_across_stimuli():
 
 
 def store_hrv_feat():
+    '''
+    存储stimulus级别的hrv特征
+    Returns
+    -------
 
+    '''
     from yasa.others import sliding_window
 
     target_dir = 'tables/time_domain_feats'
@@ -288,12 +294,58 @@ def store_hrv_feat():
                 _feat = None
                 _feat = nk.hrv(ppg_peaks, sampling_rate=hrv_samp_freq, show=False)
                 _time = int(_time)
-                _feat.index = [f"{_time}-{_time + win_size}"]
+                _feat.index = [f"{_time}_{_time + win_size}"]
                 all_feat = pd.concat([all_feat, _feat])
             all_feat.to_csv(f'{RESULTS_PATH}/hrv/{target_dir}/{user_info}_{sound_id}_{sound_name}.csv')
+
+def store_whole_hrv_feat():
+    '''
+    存储stimulus级别的hrv特征
+    Returns
+    -------
+
+    '''
+    from yasa.others import sliding_window
+
+    target_dir = 'tables/time_domain_feats'
+    os.makedirs(f'{RESULTS_PATH}/hrv/{target_dir}/', exist_ok=True)
+    rm_ectopic_beats = False
+    win_size = 30  # 单位为s
+    step_size = 5
+    for user_id in user_id_list:
+    # for user_id in ['p10']:
+        print(f"**********当前用户：{user_id}***********")
+        ppg_file_path = f'{PPG_PATH}/minmax/{user_id}.ppg'
+        baseline, data = read_ppg_and_peak(ppg_file_path)
+        user_info = f"{user_id}_{user_id_to_name[user_id]}"
+
+        times, epochs = sliding_window(np.array(data['data']), sf=hrv_samp_freq, window=win_size, step=step_size)
+        all_feat = pd.DataFrame()
+        first_epoch_feat = None
+        for _time, _epoch in zip(times, epochs):
+            _epoch = minmax_scale(X=_epoch, feature_range=(-1, 1))
+            ppg_signals, ppg_info = nk.ppg_process(_epoch, sampling_rate=hrv_samp_freq)
+            # nk.ppg_plot(ppg_signals, sampling_rate=hrv_samp_freq)
+            ppg_peaks = remove_outliers_and_ectopic_beats(ppg_info["PPG_Peaks"], hrv_samp_freq,
+                                                          rm_ectopic_beats=rm_ectopic_beats)
+
+            _feat = None
+            try:
+                _feat = nk.hrv(ppg_peaks, sampling_rate=hrv_samp_freq, show=False)
+            except:
+                _feat = first_epoch_feat
+                with open('log.txt', 'a') as f:
+                    f.write(f'{user_id}_{_time}\n')
+            if type(first_epoch_feat) == type(None):
+                first_epoch_feat = _feat
+            _time = int(_time)
+            _feat.index = [f"{_time}_{_time + win_size}"]
+            all_feat = pd.concat([all_feat, _feat])
+        all_feat.to_csv(f'{RESULTS_PATH}/hrv/{target_dir}/{user_info}_all_sounds.csv')
 
 
 if __name__ == '__main__':
     # plot_hrv_feat_base_single_stimuli()
     # plot_hrv_feat_across_stimuli()
     store_hrv_feat()
+    # store_whole_hrv_feat()

@@ -3,15 +3,17 @@
 
 """
 @File        :   timeFrequency  
-@Time        :   2021/12/17 1:58 下午
+@Time        :   2021/12/17 1:_res[bands_name] = 58 下午
 @Author      :   Xuesong Chen
 @Description :   
 """
+
 import numpy as np
 from yasa.others import sliding_window
 from yasa.spectral import bandpower, stft_power
 import pandas as pd
 from Reader import EDFReader
+from src.constants import bands_name
 
 
 class TimeFrequency:
@@ -97,7 +99,7 @@ class TimeFrequency:
 
     def __init__(self, raw, win_sec, step_sec=None, relative=False, bands=None):
         if bands is None:
-            bands = [(0.5, 4, 'Delta'), (4, 8, 'Theta'), (8, 12, 'Alpha'),
+            bands = [(1, 4, 'Delta'), (4, 8, 'Theta'), (8, 12, 'Alpha'),
                      (12, 16, 'Sigma'), (16, 30, 'Beta'), (30, 40, 'Gamma')]
             # bands = [(4, 8, 'Theta'), (8, 12, 'Alpha'),
             #          (12, 16, 'Sigma'), (16, 30, 'Beta'), (30, 40, 'Gamma')]
@@ -115,14 +117,18 @@ class TimeFrequency:
         self.relative = relative
         self.bands = bands
 
-    def get_band_power(self):
+    def get_band_power(self, log_power=False):
 
         feat_list = []
         for i in range(len(self.epochs)):
-            feat_list.append(bandpower(self.epochs[i], sf=self.sfreq,
+            _res = bandpower(self.epochs[i], sf=self.sfreq,
                       ch_names=self.ch_names,
                       win_sec=self.win_sec, relative=self.relative,
-                      bands=self.bands))
+                      bands=self.bands)
+            if log_power:
+                _res[bands_name] = _res[bands_name].apply(lambda x: np.log(x))
+                # _res[]
+            feat_list.append(_res)
 
         return feat_list
 

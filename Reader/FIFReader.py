@@ -31,21 +31,21 @@ class FIFReader(BaseReader):
         self._raw.set_montage(ten_twenty_montage)
         self._anno = self.raw.annotations
 
-    def get_event_raw(self, event_name):
-        '''
-        获取指定event阶段的raw
-        Parameters
-        ----------
-        tag_name: Annotation中指定阶段的名称
-
-        Returns
-        -------
-        event_raw: Raw
-        '''
-        tmp_raw = self.raw.copy()
-        event_idx = np.where(self._anno.description == event_name)
-        start_time = self._anno.onset[event_idx][0]
-        duration = self._anno.duration[event_idx][0]
-        tmax = min(start_time+duration, tmp_raw.last_samp/tmp_raw.info['sfreq'])
-        return tmp_raw.crop(tmin=start_time, tmax=tmax, include_tmax=False)
-
+    # def get_event_raw(self, event_name):
+    #     '''
+    #     获取指定event阶段的raw
+    #     Parameters
+    #     ----------
+    #     tag_name: Annotation中指定阶段的名称
+    #
+    #     Returns
+    #     -------
+    #     event_raw: Raw
+    #     '''
+    #     tmp_raw = self.raw.copy()
+    #     event_idx = np.where(self._anno.description == event_name)
+    #     start_time = self._anno.onset[event_idx][0]
+    #     duration = self._anno.duration[event_idx][0]
+    #     tmax = min(start_time+duration, tmp_raw.last_samp/tmp_raw.info['sfreq'])
+    #     return tmp_raw.crop(tmin=start_time, tmax=tmax, include_tmax=False)
+    #

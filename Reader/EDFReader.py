@@ -39,23 +39,25 @@ class EDFReader(BaseReader):
                 self._anno.onset += offset
             self._raw.set_annotations(self._anno)
 
-    def get_event_raw(self, event_name):
-        '''
-        获取指定event阶段的raw
-        Parameters
-        ----------
-        tag_name: Annotation中指定阶段的名称
-
-        Returns
-        -------
-        event_raw: Raw
-        '''
-        tmp_raw = self.raw.copy()
-        event_idx = np.where(self._anno.description == event_name)
-        start_time = self._anno.onset[event_idx][0]
-        duration = self._anno.duration[event_idx][0]
-        tmax = min(start_time+duration, tmp_raw.last_samp/tmp_raw.info['sfreq'])
-        return tmp_raw.crop(tmin=start_time, tmax=tmax, include_tmax=True)
+    # def get_event_raw(self, event_name):
+    #     '''
+    #     获取指定event阶段的raw
+    #     Parameters
+    #     ----------
+    #     tag_name: Annotation中指定阶段的名称
+    #
+    #     Returns
+    #     -------
+    #     event_raw: Raw
+    #     '''
+    #     tmp_raw = self.raw.copy()
+    #     if event_name in ['rest', 'baseline']:
+    #         return tmp_raw.copy().crop(tmin=0, tmax=60*5)
+    #     event_idx = np.where(self._anno.description == event_name)
+    #     start_time = self._anno.onset[event_idx][0]
+    #     duration = self._anno.duration[event_idx][0]
+    #     tmax = min(start_time+duration, tmp_raw.last_samp/tmp_raw.info['sfreq'])
+    #     return tmp_raw.crop(tmin=start_time, tmax=tmax, include_tmax=True)
 
 
 

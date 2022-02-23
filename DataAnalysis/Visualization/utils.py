@@ -12,6 +12,28 @@ import numpy as np
 from DataAnalysis.SleepAid.constants import *
 import mne
 
+from src import tag_to_desc
+from src.sleep.utils import get_user_ratings
+
+
+def plot_span(anno, ax, user_id):
+    idx = 0
+    for desc, duration, onset in zip(anno.description, anno.duration, anno.onset):
+        task_start_pos = onset              # 单位为s
+        task_end_pos = onset + duration     # 单位为s
+        relax_start_pos = task_end_pos
+        relax_end_pos = relax_start_pos + 60 * 3
+        ax.axvspan(task_start_pos, task_end_pos, facecolor='#458CC4', alpha=0.2)
+        ax.axvspan(relax_start_pos, relax_end_pos, facecolor='#A6A6A6', alpha=0.2)
+        res = get_user_ratings(user_id)
+        _l = res[idx+1]
+        sound_name = tag_to_desc[_l['标号']]
+        s = f"\t{sound_name} \n\t困倦:{_l['困倦']} \n\t熟悉:{_l['熟悉']} \n\t喜爱:{_l['喜爱']}"
+        x = task_start_pos
+        y = ax.viewLim.ymax- 0.2 * (ax.viewLim.ymax- ax.viewLim.ymin)
+        ax.text(x, y, s)
+        idx += 1
+
 def plot_stage_span(ax, anno, start_sample_id):
     '''
     在脑电变化图像上进行不同stage的背景色标注
