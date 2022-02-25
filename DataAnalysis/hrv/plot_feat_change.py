@@ -25,8 +25,8 @@ from src.sleep.utils import get_user_ratings, get_sound_order
 from neurokit2.hrv.hrv_utils import _hrv_get_rri
 
 user_id_list = list(start_time_bias.keys())
-user_id_list = hrv_user_id_list[-2:] + ['p15', 'p17']
-user_id_list = ['p17']
+# user_id_list = hrv_user_id_list[-2:] + ['p15', 'p17']
+# user_id_list = ['p17']
 plt.rcParams['figure.figsize'] = [14, 11]  # Bigger images
 
 
@@ -307,10 +307,10 @@ def store_whole_hrv_feat():
     '''
     from yasa.others import sliding_window
 
-    target_dir = 'tables/time_domain_feats'
+    target_dir = 'tables/time_domain_feats/60s'
     os.makedirs(f'{RESULTS_PATH}/hrv/{target_dir}/', exist_ok=True)
     rm_ectopic_beats = False
-    win_size = 30  # 单位为s
+    win_size = 120  # 单位为s
     step_size = 5
     for user_id in user_id_list:
     # for user_id in ['p10']:
@@ -347,5 +347,5 @@ def store_whole_hrv_feat():
 if __name__ == '__main__':
     # plot_hrv_feat_base_single_stimuli()
     # plot_hrv_feat_across_stimuli()
-    store_hrv_feat()
-    # store_whole_hrv_feat()
+    # store_hrv_feat()
+    store_whole_hrv_feat()

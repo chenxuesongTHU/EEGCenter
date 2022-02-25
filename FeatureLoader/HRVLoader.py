@@ -15,7 +15,7 @@ from src import *
 class HRVLoader():
     def __init__(self, user_id, stimulus_id):
         tag_to_desc.update({'baseline': 'baseline'})
-        path = f'{RESULTS_PATH}/hrv/tables/time_domain_feats'
+        path = f'{RESULTS_PATH}/hrv/tables/time_domain_feats/60s'
         user_info = f'{user_id}_{user_id_to_name[user_id]}'
         if stimulus_id == 'all':
             stimulus_info = "all_sounds"

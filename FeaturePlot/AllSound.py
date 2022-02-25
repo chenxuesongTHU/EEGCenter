@@ -30,10 +30,10 @@ def nan_pearsonr(x, y):
 
 
 def plot_feat_change():
-    signal_type = 'eeg'
-    # signal_type = 'ppg'
-    # interest_feat = ['HRV_pNN50', 'HRV_pNN20']
-    interest_feat = bands_name
+    # signal_type = 'eeg'
+    signal_type = 'ppg'
+    interest_feat = ['HRV_CMSE', 'HRV_RCMSE']
+    # interest_feat = bands_name
 
     for user_id in hrv_user_id_list:
 
@@ -55,7 +55,7 @@ def plot_feat_change():
         time_idx = list(np.arange(int(win_size / 2), end_time, step))
         cur_feat.index = time_idx
         fig, axes = plt.subplots(figsize=(25, 8))
-        cur_feat = smooth_dataframe(cur_feat, rolling_length=7)
+        cur_feat = smooth_dataframe(cur_feat, rolling_length=5)
         sns.lineplot(data=cur_feat[interest_feat])
         # axes.set_xticks(tf.times)
         plot_span(anno, axes, user_id)
@@ -117,5 +117,6 @@ def calc_single_type_signal_correlation():
 
 
 if __name__ == '__main__':
-    calc_correlation()
+    plot_feat_change()
+    # calc_correlation()
     # calc_single_type_signal_correlation()
