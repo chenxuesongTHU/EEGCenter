@@ -92,4 +92,5 @@ start_time_bias = {
 
 hrv_user_id_list = list(start_time_bias.keys())
 
+bp_samp_freq = 500
 hrv_samp_freq = 497

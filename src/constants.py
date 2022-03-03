@@ -33,9 +33,101 @@ channel_names = [
     'FT8', 'FT9', 'Fp1', 'Fp2', 'Fpz', 'Fz', 'O1', 'O2', 'Oz', 'P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'PO3',
     'PO4', 'PO7', 'PO8', 'POz', 'Pz', 'T7', 'T8', 'TP7', 'TP8', 'VEO']
 
-occipital_region = ['O1', 'O2', 'PO3', 'PO4', 'PO7', 'PO8', 'POz', 'Oz']
-frontal_region = ['Fp1', 'Fp2', 'Fpz']
-temporal_region = ['FT10', 'FT7', 'FT8', 'FT9', 'T7', 'T8', 'TP7', 'TP8']
+'''
+AF表示前额叶和额叶的中间区域，
+C（Central）表示中央区，
+CP表示中央叶和顶叶的中间区域，
+F（Frontal）表示额区，
+FC表示额叶和中央叶的中间区域，
+FP（Prefrontal）表示前额区，
+FT表示额叶和颞叶的中间区域，
+O（Occipital）表示枕区，
+P（Parietal）表示顶区，
+PO表示顶区和枕区的中间区域，
+T（Temporal）表示颞区，
+TP表示颞叶和顶叶的中间区域，
+'''
+# FP
+pre_frontal_region = [
+    'Fp1', 'Fp2', 'Fpz'
+]
+
+# AF
+between_fp_f_region = [
+    'AF3', 'AF4', 'AF7', 'AF8'
+]
+
+# F
+frontal_region = [
+    'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'Fz'
+]
+
+# FC
+between_f_c_region = [
+    'FC1', 'FC2', 'FC3', 'FC4', 'FC5', 'FC6'
+]
+
+# C
+central_region = [
+    'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'Cz'
+]
+
+# CP
+between_c_p_region = [
+    'CP1', 'CP2', 'CP3', 'CP4', 'CP5', 'CP6', 'CPz'
+]
+
+# FT
+frontal_temporal_region = [
+    'FT10', 'FT7', 'FT8', 'FT9'
+]
+
+# T
+temporal_region = [
+    'T7', 'T8'
+]
+
+# TP
+between_t_p_region = [
+    'TP7', 'TP8'
+]
+
+# P
+parietal_region = [
+    'P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'Pz'
+]
+
+# PO
+between_p_o_region = [
+    'PO3', 'PO4', 'PO7', 'PO8', 'POz'
+]
+
+# O
+occipital_region = [
+    'O1', 'O2', 'Oz'
+]
+
+# VEO
+veo_region = [
+    'VEO'
+]
+
+brain_region = {
+    'FP': pre_frontal_region,
+    'AF': between_fp_f_region,
+    'F' : frontal_region,
+    'FC': between_f_c_region,
+    'C' : central_region,
+    'CP': between_c_p_region,
+    'FT': frontal_temporal_region,
+    'T' : temporal_region,
+    'TP': between_t_p_region,
+    'P' : parietal_region,
+    'PO': between_p_o_region,
+    'O' : occipital_region
+}
+
+
 brain_region_info = {
     'All': channel_names,
     'Frontal': frontal_region,

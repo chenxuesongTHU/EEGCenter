@@ -9,6 +9,8 @@
 """
 import sys
 
+import pandas as pd
+
 from src import *
 
 class EEGLoader():
@@ -33,7 +35,7 @@ class EEGLoader():
         else:
             print(f'{method} is not a available method!')
             sys.exit()
-        return res
+        return pd.DataFrame(res)
 
 # loader = EEGLoader('p01', 'baseline')
 # loader.get_power(bands=["Alpha", "Beta"], channels=["O1", "O2"])
