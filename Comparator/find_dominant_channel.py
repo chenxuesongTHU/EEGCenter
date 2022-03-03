@@ -44,7 +44,7 @@ def sub_process_causality(reader, stimuli_id):
     event_raw = event_raw.resample(100)
     signals_arr = event_raw.get_data(picks=channel_names).squeeze()*10e6
     signals_df = pd.DataFrame(signals_arr.T, columns=channel_names)
-    tmp = calc_max_GCI_from_df(signals_df)
+    tmp = calc_max_GCI_from_df(signals_df, maxlag=10)
     return tmp  # df
 
 
@@ -69,9 +69,10 @@ def time_domain_correlation():
         tmp_dic = {}
 
         for stimuli_id in tag_to_desc.keys():
-            _ = sub_process_causality(reader, stimuli_id)
+            # _ = sub_process_causality(reader, stimuli_id)
+            # print()
             # tmp_dic[stimuli_id] = pool.apply_async(sub_process, args=(reader, stimuli_id), error_callback=print_error)
-            # tmp_dic[stimuli_id] = pool.apply_async(sub_process_causality, args=(reader, stimuli_id), error_callback=print_error)
+            tmp_dic[stimuli_id] = pool.apply_async(sub_process_causality, args=(reader, stimuli_id), error_callback=print_error)
 
         pool.close()
         pool.join()

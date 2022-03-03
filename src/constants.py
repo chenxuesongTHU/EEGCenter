@@ -135,13 +135,14 @@ brain_region_info = {
     'Temporal': temporal_region,
 }
 DATA_PATH = "/Volumes/ExtremeSSD/EEGAndSound/"
-EDF_PATH = "/Volumes/ExtremeSSD/EEGAndSound/datasets/edfV3/"
-FIF_PATH = "/Volumes/ExtremeSSD/EEGAndSound/datasets/fifV3/"
-ECG_PATH = "/Volumes/ExtremeSSD/EEGAndSound/datasets/ecg/"
-PPG_PATH = "/Volumes/ExtremeSSD/EEGAndSound/datasets/ppg/"
-LOG_PATH = "/Volumes/ExtremeSSD/EEGAndSound/datasets/useful_log/"
-RESULTS_PATH = "/Volumes/ExtremeSSD/EEGAndSound/results/"
+DATA_PATH = "/media/pc/ExtremeSSD/EEGAndSound"
+EDF_PATH = f"{DATA_PATH}/datasets/edfV3/"
+FIF_PATH = f"{DATA_PATH}/datasets/fifV3/"
+ECG_PATH = f"{DATA_PATH}/datasets/ecg/"
+PPG_PATH = f"{DATA_PATH}datasets/ppg/"
+LOG_PATH = f"{DATA_PATH}/datasets/useful_log/"
+RESULTS_PATH = f"{DATA_PATH}/results/"
 
-RAW_ECG_PATH = "/Volumes/ExtremeSSD/EEGAndSound/raw datasets/ecg/"
-RAW_EEG_PATH = "/Volumes/ExtremeSSD/EEGAndSound/raw datasets/eeg/"
-RAW_TOBII_PATH = "/Volumes/ExtremeSSD/EEGAndSound/raw datasets/log/"
+RAW_ECG_PATH = f"{DATA_PATH}/raw datasets/ecg/"
+RAW_EEG_PATH = f"{DATA_PATH}/raw datasets/eeg/"
+RAW_TOBII_PATH = f"{DATA_PATH}/raw datasets/log/"

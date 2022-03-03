@@ -116,7 +116,10 @@ def calc_max_GCI_from_df(df, maxlag=5):
 
     for index_feat_name in tqdm(columns):
         for column_feat_name in columns:
-            _p_val = get_max_GCI_from_two_cols(df[[index_feat_name, column_feat_name]], maxlag=maxlag)
-            correlation_df.at[index_feat_name, column_feat_name] = _p_val
+            if index_feat_name == column_feat_name:
+                _val = 0
+            else:
+                _val = get_max_GCI_from_two_cols(df[[index_feat_name, column_feat_name]], maxlag=maxlag)
+            correlation_df.at[index_feat_name, column_feat_name] = _val
 
     return correlation_df

@@ -12,7 +12,7 @@ import librosa
 from pathlib import Path
 import librosa.display
 import matplotlib.pyplot as plt
-import matplotlib; matplotlib.use('TkAgg')
+import matplotlib; # matplotlib.use('TkAgg')
 import soundfile as sf
 
 class AcousticReader():
