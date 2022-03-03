@@ -41,6 +41,7 @@ def sub_process_causality(reader, stimuli_id):
 
     '''
     event_raw = reader.get_event_raw(stimuli_id)
+    event_raw = event_raw.resample(100)
     signals_arr = event_raw.get_data(picks=channel_names).squeeze()*10e6
     signals_df = pd.DataFrame(signals_arr.T, columns=channel_names)
     tmp = calc_max_GCI_from_df(signals_df)
