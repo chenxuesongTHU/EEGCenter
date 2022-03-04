@@ -10,8 +10,6 @@
 from multiprocessing.pool import Pool
 
 from pandas import MultiIndex
-from statsmodels.tsa.stattools import grangercausalitytests
-from tqdm import tqdm
 
 from Reader import FIFReader
 from src import *
@@ -42,7 +40,7 @@ def sub_process_causality(reader, stimuli_id):
     '''
     event_raw = reader.get_event_raw(stimuli_id)
     event_raw = event_raw.resample(100)
-    signals_arr = event_raw.get_data(picks=channel_names).squeeze()*10e6
+    signals_arr = event_raw.get_data(picks=channel_names).squeeze() * 10e6
     signals_df = pd.DataFrame(signals_arr.T, columns=channel_names)
     tmp = calc_max_GCI_from_df(signals_df, maxlag=10)
     return tmp  # df
@@ -61,26 +59,33 @@ def time_domain_correlation():
     def print_error(err):
         print('err Info:', err)
 
-    for user_id in tqdm(user_id_list):
-        reader = FIFReader(
-            f'{FIF_PATH}/{user_id}.fif',
-        )
-        pool = Pool(len(tag_to_desc))
-        tmp_dic = {}
-
-        for stimuli_id in tag_to_desc.keys():
-            # _ = sub_process_causality(reader, stimuli_id)
-            # print()
-            # tmp_dic[stimuli_id] = pool.apply_async(sub_process, args=(reader, stimuli_id), error_callback=print_error)
-            tmp_dic[stimuli_id] = pool.apply_async(sub_process_causality, args=(reader, stimuli_id), error_callback=print_error)
+    # for user_id in tqdm(user_id_list):
+    batch_size = 5
+    for user_id_idx in range(0, len(user_id_list), batch_size):
+        tmp_user_id_list = user_id_list[user_id_idx: user_id_idx + batch_size]
+        # print(tmp_user_id_list, len(tag_to_desc) * len(tmp_user_id_list))
+        # continue
+        tmp_dic = defaultdict(lambda: defaultdict(lambda: None))
+        pool = Pool(len(tag_to_desc) * len(tmp_user_id_list))
+        for user_id in tmp_user_id_list:
+            reader = FIFReader(
+                f'{FIF_PATH}/{user_id}.fif',
+            )
+            for stimuli_id in tag_to_desc.keys():
+                # _ = sub_process_causality(reader, stimuli_id)
+                # print()
+                # tmp_dic[user_id][stimuli_id] = pool.apply_async(sub_process, args=(reader, stimuli_id), error_callback=print_error)
+                tmp_dic[user_id][stimuli_id] = pool.apply_async(sub_process_causality, args=(reader, stimuli_id),
+                                                       error_callback=print_error)
 
         pool.close()
         pool.join()
 
-        for stimuli_id in tag_to_desc.keys():
-            res.loc[user_id, stimuli_id] = tmp_dic[stimuli_id].get().values
+        for user_id in tmp_user_id_list:
+            for stimuli_id in tag_to_desc.keys():
+                res.loc[user_id, stimuli_id] = tmp_dic[user_id][stimuli_id].get().values
 
-    res.to_csv('find_dominant_channel_by_causality.csv')
+        res.to_csv('find_dominant_channel_by_causality.csv')
 
 
 def calc_diff_channels_correlation_time():
@@ -114,4 +119,3 @@ def calc_diff_channels_correlation_time():
 
 time_domain_correlation()
 # calc_diff_channels_correlation_time()
-

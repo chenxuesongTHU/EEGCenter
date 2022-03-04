@@ -114,8 +114,9 @@ def calc_max_GCI_from_df(df, maxlag=5):
     columns = list(df.columns)
     correlation_df = pd.DataFrame(index=columns, columns=columns)
 
-    for index_feat_name in tqdm(columns):
+    for idx, index_feat_name in enumerate(columns):
         for column_feat_name in columns:
+            print(f"\r{idx}: {index_feat_name}-{column_feat_name}")
             if index_feat_name == column_feat_name:
                 _val = 0
             else:
