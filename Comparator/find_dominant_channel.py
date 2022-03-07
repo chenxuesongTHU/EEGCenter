@@ -13,6 +13,7 @@ from pandas import MultiIndex
 
 from Reader import FIFReader
 from src import *
+from src.sleep.utils import get_user_ratings
 from src.utils import calc_pearsonr_from_df, calc_max_GCI_from_df
 
 
@@ -92,13 +93,65 @@ def calc_diff_channels_correlation_time():
     # df = pd.read_csv('不同通道的时域相关性.csv', index_col=[0])
     df = pd.read_csv('find_dominant_channel.csv', index_col=[0])
     corr_df = pd.DataFrame(index=user_id_list, columns=list(tag_to_desc.keys()))
-    for (user, stimulus), group in df.groupby(['user', 'stimulus'], sort=False):
-        n_top = 3
+    n_top = 10
+    for (user_id, stimulus_id), group in df.groupby(['user', 'stimulus'], sort=False):
         max_channels = list(group[channel_names].abs().mean().sort_values(ascending=False).index[:n_top])
         max_v = list(group[channel_names].abs().mean().sort_values(ascending=False).data[:n_top])
+        rating = get_user_ratings(user_id, stimulus_id=stimulus_id)
         # corr_df.at[user, stimulus] = f"{max_channels[0]}:" + "{:.2f}".format(max_v[0])
-        corr_df.at[user, stimulus] = f"{';'.join(max_channels)}"
+        _n_o = 0
+        _n_f = 0
+        for _chan in max_channels:
+            if 'O' in _chan:
+                _n_o += 1
+            if 'F' in _chan:
+                _n_f += 1
+        if stimulus_id != 'baseline':
+            sleepiness = str(rating['困倦'])
+        else:
+            sleepiness = str(rating[0]['实验前困倦程度'])
+        # corr_df.at[user_id, stimulus_id] = f"{';'.join([sleepiness] + max_channels)}"
+        corr_df.at[user_id, stimulus_id] = f"{sleepiness}; O:{_n_o}; F:{_n_f}"
     corr_df.sort_index(axis=1, ascending=True, inplace=True)
+
+    def get_n_o_f(string):
+        str_list = string.split(';')
+        str_o = str_list[-2]
+        str_f = str_list[-1]
+        return {
+            'sleepiness': int(str_list[0]),
+            'n_o': int(str_o.split(':')[-1]),
+            'n_f': int(str_f.split(':')[-1])
+        }
+
+    for user_id in user_id_list:
+
+        row = corr_df.loc[user_id]
+        baseline = row['baseline']
+        _baseline_res = get_n_o_f(baseline)
+        _baseline_n_o = _baseline_res['n_o']
+        _baseline_n_f = _baseline_res['n_f']
+        _baseline_sleepiness = _baseline_res['sleepiness']
+
+        for stimulus_id in list(tag_to_desc.keys()):
+            _res = get_n_o_f(row[stimulus_id])
+            n_o = _res['n_o']
+            n_f = _res['n_f']
+            _sleepiness = _res['sleepiness']
+            extra_info = ''
+            if n_o > _baseline_n_o and n_f < _baseline_n_f:
+                if _sleepiness > _baseline_sleepiness:
+                    extra_info = 'Y'
+                else:
+                    extra_info = 'N'
+            elif n_o < _baseline_n_o and n_f > _baseline_n_f:
+                if _sleepiness <= _baseline_sleepiness:
+                    extra_info = 'Y'
+                else:
+                    extra_info = 'N'
+            corr_df.loc[user_id, stimulus_id] += f';{extra_info}'
+
+
     for sti in list(tag_to_desc.keys()) + ['baseline']:
         n_o = corr_df[sti].str.contains('O').sum()
         n_f = corr_df[sti].str.contains('F').sum()
@@ -106,7 +159,7 @@ def calc_diff_channels_correlation_time():
         corr_df.at['n_o', sti] = n_o
         corr_df.at['n_f', sti] = n_f
         corr_df.at['n_o_f', sti] = n_o_f
-    corr_df.to_csv("top3_dominant_channels.csv")
+    corr_df.to_csv(f"top{n_top}_dominant_channels.csv")
     # corr_df.to_csv("top1_dominant_channels.csv")
     # res = pd.DataFrame()
     # for region, channels_in_one_region in brain_region.items():
@@ -117,5 +170,5 @@ def calc_diff_channels_correlation_time():
     # res.T.to_csv('test.csv')
 
 
-time_domain_correlation()
-# calc_diff_channels_correlation_time()
+# time_domain_correlation()
+calc_diff_channels_correlation_time()

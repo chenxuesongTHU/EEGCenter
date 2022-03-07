@@ -136,7 +136,7 @@ brain_region_info = {
 }
 DATA_PATH = "/Volumes/ExtremeSSD/EEGAndSound/"
 # DATA_PATH = "/media/pc/ExtremeSSD/EEGAndSound"
-DATA_PATH = "/home/cxs/data/eeg/EEGAndSound"
+# DATA_PATH = "/home/cxs/data/eeg/EEGAndSound"
 EDF_PATH = f"{DATA_PATH}/datasets/edfV3/"
 FIF_PATH = f"{DATA_PATH}/datasets/fifV3/"
 ECG_PATH = f"{DATA_PATH}/datasets/ecg/"
