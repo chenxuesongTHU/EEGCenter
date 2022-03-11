@@ -15,12 +15,12 @@ from src.sleep.constants import *
 
 # 单个图片的大小为150*150
 
-def image_concat(path):
+def image_concat(src_path, target_path, output_file_name):
 
     images = []
     imagefile = []
     # 存储所有图片文件名称
-    for root, dirs, files in os.walk(path):
+    for root, dirs, files in os.walk(src_path):
         for f in files:
             if f == 'all_sound.png' or f.startswith('._') or f.startswith('org'):
                 continue
@@ -28,7 +28,7 @@ def image_concat(path):
                 images.append(f)
     images = sorted(images)
     for i in range(len(images)):
-        imagefile.append(path + '/' + images[i])
+        imagefile.append(src_path + '/' + images[i])
 
     (width, height) = Image.open(imagefile[0]).size
     TARGET_WIDTH = len(imagefile) * width
@@ -45,11 +45,11 @@ def image_concat(path):
         right += width
         # 图片的质量 0~100
     quantity_value = 100
-    target.save(path + '/all_sound.png', quantity=quantity_value)
+    target.save(target_path + f'/{output_file_name}', quantity=quantity_value)
 
 
 if __name__ == '__main__':
     for user_id in user_id_list:
         target_path = f'{RESULTS_PATH}/{user_id}_{user_id_to_name[user_id]}' \
                       f'/img/stimulus_level/norm_among_stimulus/column_oriented'
-        image_concat(target_path)
+        image_concat(target_path, target_path)

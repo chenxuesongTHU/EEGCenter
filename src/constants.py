@@ -22,8 +22,9 @@ bands_freqs = {
     'Gamma': (30, 40)
 }
 
-user_id_list = ['p01', 'p02', 'p03', 'p04', 'p05', 'p06', 'p07',
-                'p08', 'p09', 'p10', 'p11', 'p13', 'p14', 'p16', 'p17']
+user_id_list = [
+    'p01', 'p02', 'p03', 'p04', 'p05', 'p06', 'p07',
+    'p08', 'p09', 'p10', 'p11', 'p13', 'p14', 'p16', 'p17']
 
 # user_id_list = ['p01', 'p02', 'p03', 'p06']
 
@@ -115,18 +116,17 @@ veo_region = [
 brain_region = {
     'FP': pre_frontal_region,
     'AF': between_fp_f_region,
-    'F' : frontal_region,
+    'F': frontal_region,
     'FC': between_f_c_region,
-    'C' : central_region,
+    'C': central_region,
     'CP': between_c_p_region,
     'FT': frontal_temporal_region,
-    'T' : temporal_region,
+    'T': temporal_region,
     'TP': between_t_p_region,
-    'P' : parietal_region,
+    'P': parietal_region,
     'PO': between_p_o_region,
-    'O' : occipital_region
+    'O': occipital_region
 }
-
 
 brain_region_info = {
     'All': channel_names,

@@ -114,6 +114,7 @@ def plot_topomap(df, info, col_name="", show=True, title=None, vmax=None, vmin=N
     mne.viz.plot_topomap(df[col_name], info, axes=ax,
                          names=ch_names,
                          vmin=vmin,
+                         cmap='RdBu_r',
                          vmax=vmax,
                          show_names=True,
                          show=False)

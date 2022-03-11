@@ -11,10 +11,10 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 from scipy.stats import pearsonr
-
 # from scipy.stats.mstats_basic import pearsonr
 from statsmodels.tsa.stattools import grangercausalitytests
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 from src import bp_samp_freq
 
@@ -74,7 +74,7 @@ def max_pearsonr(x, y, n_bias_samples, step):
         return min(res)
 
 
-def max_phrase_bias(x, y, n_bias_samples, step):
+def max_pearsonr_and_phrase_bias(x, y, n_bias_samples, step):
     x_name, y_name = x.name, y.name
     x = np.array(x)
     y = np.array(y)
@@ -89,19 +89,25 @@ def max_phrase_bias(x, y, n_bias_samples, step):
         else:
             r = pearsonr(crop_x, _y)[0]
         res.append(r)
-    import matplotlib.pyplot as plt
-    plt.plot(res)
-    plt.axvline(mid)
-    plt.show()
     if abs(max(res)) > abs(min(res)):
         _argmax = np.argmax(res)
+        time_bias = 0
         if _argmax != mid:
-            with open('phrase bias.txt', 'a') as f:
-                print(f"{x_name}-{y_name}: {(_argmax - mid)*step / bp_samp_freq}s", file=f, flush=True)
+            time_bias = (_argmax - mid) * step / bp_samp_freq
 
-        return max(res)
+        # if abs(time_bias) > 0.3:
+        #     plt.figure()
+        #     plt.plot(res)
+        #     plt.axvline(mid)
+        #     plt.savefig(f"{x_name}_{y_name}.pdf", format="pdf")
+
+        return max(res), time_bias
     else:
-        return min(res)
+        _argmin = np.argmin(res)
+        time_bias = 0
+        if _argmin != mid:
+            time_bias = (_argmin - mid) * step / bp_samp_freq
+        return min(res), time_bias
 
 
 def calc_pearsonr_from_df(df, n_bias_samples=0, step=1):
@@ -129,25 +135,26 @@ def calc_pearsonr_from_df(df, n_bias_samples=0, step=1):
 
 def calc_phrase_bias_from_df(df, n_bias_samples=0, step=1):
     columns = list(df.columns)
+    # print(columns)
     correlation_df = pd.DataFrame(index=columns, columns=columns)
+    time_bias_df = pd.DataFrame(index=columns, columns=columns)
 
-    for i, index_feat_name in enumerate(list(columns)):
-        for column_feat_name in list(columns[i + 1:]):
-            if n_bias_samples == 0:
-                if df.isnull().values.any():
-                    _pearson_val = nan_pearsonr(
-                        df[index_feat_name], df[column_feat_name]
-                    )[0]
-                else:
-                    _pearson_val = pearsonr(df[index_feat_name], df[column_feat_name])[0]
+    for idx, index_feat_name in tqdm(enumerate(columns)):
+        for column_feat_name in list(columns[idx + 1:]):
+            if index_feat_name == column_feat_name:
+                _val = 1
+                _time_bias = 0
             else:
-                _pearson_val = max_pearsonr(
+                [_val, _time_bias] = max_pearsonr_and_phrase_bias(
                     df[index_feat_name], df[column_feat_name], n_bias_samples, step
                 )
-            correlation_df.at[index_feat_name, column_feat_name] = _pearson_val
-            correlation_df.at[column_feat_name, index_feat_name] = _pearson_val
+            correlation_df.at[index_feat_name, column_feat_name] = _val
+            correlation_df.at[column_feat_name, index_feat_name] = _val
+            time_bias_df.at[index_feat_name, column_feat_name] = _time_bias
+            time_bias_df.at[column_feat_name, index_feat_name] = -_time_bias
     correlation_df = correlation_df.fillna(1)
-    return correlation_df
+    time_bias_df = time_bias_df.fillna(0)
+    return correlation_df, time_bias_df
 
 
 def get_max_GCI_from_two_cols(df, maxlag=2, test_method='params_ftest'):
@@ -169,7 +176,7 @@ def get_max_GCI_from_two_cols(df, maxlag=2, test_method='params_ftest'):
         假设要判定X->Y的因果性，那么我们应寻找最大的GCI，GCI>0说明存在因果性，若GCI的值越大，说明因果性越强。
     '''
     GCI_list = []
-    for i in range(1, maxlag+1):
+    for i in range(1, maxlag + 1):
         GCI_list.append(np.log(np.var(test_result[i][1][0].resid) / np.var(test_result[i][1][1].resid)))
     return max(GCI_list)
 
@@ -188,3 +195,7 @@ def calc_max_GCI_from_df(df, maxlag=5):
             correlation_df.at[index_feat_name, column_feat_name] = _val
 
     return correlation_df
+
+
+def check_symmetric(a, tol=1e-8):
+    return np.all(np.abs(a-a.T) < tol)

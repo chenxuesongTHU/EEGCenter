@@ -9,6 +9,7 @@
 """
 from multiprocessing.pool import Pool
 
+import numpy as np
 from pandas import MultiIndex
 
 from Reader import FIFReader
@@ -90,8 +91,12 @@ def time_domain_correlation():
 
 
 def calc_diff_channels_correlation_time():
+
+    extra_file_name = '_by_causality'
+    # extra_file_name = ''
     # df = pd.read_csv('不同通道的时域相关性.csv', index_col=[0])
-    df = pd.read_csv('find_dominant_channel.csv', index_col=[0])
+    df = pd.read_csv(f'find_dominant_channel{extra_file_name}.csv', index_col=[0])
+    # df = pd.read_csv('find_dominant_channel_by_causality.csv', index_col=[0])
     corr_df = pd.DataFrame(index=user_id_list, columns=list(tag_to_desc.keys()))
     n_top = 10
     for (user_id, stimulus_id), group in df.groupby(['user', 'stimulus'], sort=False):
@@ -110,9 +115,12 @@ def calc_diff_channels_correlation_time():
             sleepiness = str(rating['困倦'])
         else:
             sleepiness = str(rating[0]['实验前困倦程度'])
-        # corr_df.at[user_id, stimulus_id] = f"{';'.join([sleepiness] + max_channels)}"
-        corr_df.at[user_id, stimulus_id] = f"{sleepiness}; O:{_n_o}; F:{_n_f}"
+        corr_df.at[user_id, stimulus_id] = f"{';'.join([sleepiness] + max_channels)}"
+        # corr_df.at[user_id, stimulus_id] = f"{sleepiness}; O:{_n_o}; F:{_n_f}"
     corr_df.sort_index(axis=1, ascending=True, inplace=True)
+
+    corr_df.to_csv(f"top{n_top}_dominant_channel_name{extra_file_name}.csv")
+    return 0
 
     def get_n_o_f(string):
         str_list = string.split(';')
@@ -139,16 +147,39 @@ def calc_diff_channels_correlation_time():
             n_f = _res['n_f']
             _sleepiness = _res['sleepiness']
             extra_info = ''
-            if n_o > _baseline_n_o and n_f < _baseline_n_f:
-                if _sleepiness > _baseline_sleepiness:
-                    extra_info = 'Y'
-                else:
-                    extra_info = 'N'
-            elif n_o < _baseline_n_o and n_f > _baseline_n_f:
-                if _sleepiness <= _baseline_sleepiness:
-                    extra_info = 'Y'
-                else:
-                    extra_info = 'N'
+            predicted_sleepiness_score = 0
+
+            if n_o < _baseline_n_o:
+                predicted_sleepiness_score -= 1
+            elif n_o == _baseline_n_o:
+                predicted_sleepiness_score += 0
+            else:
+                predicted_sleepiness_score += 1
+
+            if n_f < _baseline_n_f:
+                predicted_sleepiness_score += 1
+            elif n_f == _baseline_n_f:
+                predicted_sleepiness_score += 0
+            else:
+                predicted_sleepiness_score -= 1
+
+            if _sleepiness != _baseline_sleepiness:
+                if predicted_sleepiness_score > 0:
+                    if _sleepiness > _baseline_sleepiness:
+                        extra_info = "Y"
+                    else:
+                        extra_info = "N"
+                # if predicted_sleepiness_score == 0:
+                #     if _sleepiness == _baseline_sleepiness:
+                #         extra_info = "Y"
+                #     else:
+                #         extra_info = "N"
+                if predicted_sleepiness_score < 0:
+                    if _sleepiness < _baseline_sleepiness:
+                        extra_info = "Y"
+                    else:
+                        extra_info = "N"
+
             corr_df.loc[user_id, stimulus_id] += f';{extra_info}'
 
 
@@ -159,6 +190,7 @@ def calc_diff_channels_correlation_time():
         corr_df.at['n_o', sti] = n_o
         corr_df.at['n_f', sti] = n_f
         corr_df.at['n_o_f', sti] = n_o_f
+    # corr_df.to_csv(f"top{n_top}_dominant_channels_by_causality.csv")
     corr_df.to_csv(f"top{n_top}_dominant_channels.csv")
     # corr_df.to_csv("top1_dominant_channels.csv")
     # res = pd.DataFrame()
@@ -169,6 +201,35 @@ def calc_diff_channels_correlation_time():
     #     res = pd.concat([res, tmp], axis=1)
     # res.T.to_csv('test.csv')
 
+def calc_overlap():
+    max_correlation_df = pd.read_csv("top10_dominant_channel_name.csv", index_col=[0])
+    causality_df = pd.read_csv("top10_dominant_channel_name_by_causality.csv", index_col=[0])
+
+    intersection_list = []
+
+    for user_id in user_id_list:
+        for sti_id in list(tag_to_desc.keys()) + ['baseline']:
+            cor_list = max_correlation_df.loc[user_id, sti_id].split(';')[1:]
+            causality_list = causality_df.loc[user_id, sti_id].split(';')[1:]
+            intersection_length = len(set(cor_list).intersection(causality_list))
+            intersection_list.append(intersection_length)
+
+    print(np.mean(intersection_list))
+
+
+def random_selection():
+    a = list(range(1, 63, 1))
+    b = list(range(1, 63, 1))
+    import random
+    res = []
+    while True:
+        a_samp = random.sample(a, 10)
+        b_samp = random.sample(b, 10)
+        res.append(len(set(a_samp).intersection(b_samp)))
+        print(np.mean(res))
+
 
 # time_domain_correlation()
-calc_diff_channels_correlation_time()
+# calc_diff_channels_correlation_time()
+calc_overlap()
+# random_selection()

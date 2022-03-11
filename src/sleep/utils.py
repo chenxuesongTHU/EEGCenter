@@ -34,6 +34,15 @@ def get_user_ratings(user_id, stimulus_id=None):
             return dic
     return res
 
+
+def get_user_ratings_str(user_id, stimulus_id=None):
+    ratings = get_user_ratings(user_id, stimulus_id)
+    if stimulus_id == 'baseline':
+        ret = f"实验前困倦程度: {ratings[0]['实验前困倦程度']}"
+    else:
+        ret = f"困倦: {ratings['困倦']} 熟悉: {ratings['熟悉']} 喜爱: {ratings['喜爱']}"
+    return ret
+
 def get_sound_order(user_id):
     root_path = "/Users/cxs/project/EEGCenterV2/EEGCenter"
     sound_orders_df = pd.read_csv(f'{root_path}/data/EEGAndMusic/ratings/soundsOrder.csv')
