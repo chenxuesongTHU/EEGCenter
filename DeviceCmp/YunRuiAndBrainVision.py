@@ -11,7 +11,7 @@ import sys
 
 import matplotlib.pyplot as plt
 import pandas as pd
-
+from src.utils import calc_pearsonr_from_df
 from Reader import BrainVisionReader, YunRuiReader
 from src import *
 
@@ -62,6 +62,14 @@ def save_data():
     bv_file_path = "/Users/cxs/project/EEGDevice/sleep data/1125-sleep data/eeg data/t01-1125.vhdr"
     yr_file_path = "/Users/cxs/project/EEGDevice/sleep data/1125-sleep data/new equipment data/t01-1125.edf"
     bv_reader = BrainVisionReader(bv_file_path)
+
+    # tmp start
+    # from src.utils import calc_phrase_bias_from_df
+    # tmp_raw = bv_reader.raw.copy().crop(tmin=5*60, tmax=10*60)
+    # tmp_cor, tmp_bias = calc_phrase_bias_from_df(tmp_raw.to_data_frame(), n_bias_samples=int(bp_samp_freq * 0.01),
+    #                                              step=1)
+    # end
+
     yr_reader = YunRuiReader(yr_file_path)
     adjust_annotation(bv_reader.raw)
     yr_reader.raw.info['meas_date'] = bv_reader.raw.info['meas_date']
@@ -176,6 +184,6 @@ def cmp():
             plt.close()
 
 if __name__ == '__main__':
-    # save_data()
-    cmp()
+    save_data()
+    # cmp()
 

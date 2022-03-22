@@ -229,7 +229,7 @@ def random_selection():
         print(np.mean(res))
 
 
-# time_domain_correlation()
+time_domain_correlation()
 # calc_diff_channels_correlation_time()
 calc_overlap()
 # random_selection()

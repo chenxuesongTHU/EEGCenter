@@ -10,6 +10,7 @@
 
 import mne
 
+from .Annotation import csvAnnotation
 from .base import BaseReader
 
 '''
@@ -34,6 +35,13 @@ class BrainVisionReader(BaseReader):
         BaseReader.__init__(self, file_name, annotation_file)
         self._raw = mne.io.read_raw_brainvision(self._file_name)
         if self._anno_file:
+            offset = self._raw.annotations.onset[1]
+            orig_time = self._raw.annotations.orig_time
             if annotation_file.endswith('edf'):
                 self._anno = mne.read_annotations(self._anno_file)
+            if annotation_file.endswith('csv'):
+                self._anno = csvAnnotation(annotation_file).annotation
+            if offset != 0:
+                self._anno.onset += offset
+                # self._anno.orig_time = orig_time
             self._raw.set_annotations(self._anno)

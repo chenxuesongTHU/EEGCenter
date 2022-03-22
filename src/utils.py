@@ -89,6 +89,14 @@ def max_pearsonr_and_phrase_bias(x, y, n_bias_samples, step):
         else:
             r = pearsonr(crop_x, _y)[0]
         res.append(r)
+
+    if x_name == 'Fpz' and y_name == 'Oz' or x_name == 'Oz' and y_name == 'Fpz':
+        plt.figure()
+        plt.plot(res)
+        plt.axvline(mid)
+        plt.show()
+        # plt.savefig(f"{x_name}_{y_name}.pdf", format="pdf")
+
     if abs(max(res)) > abs(min(res)):
         _argmax = np.argmax(res)
         time_bias = 0
@@ -96,10 +104,6 @@ def max_pearsonr_and_phrase_bias(x, y, n_bias_samples, step):
             time_bias = (_argmax - mid) * step / bp_samp_freq
 
         # if abs(time_bias) > 0.3:
-        #     plt.figure()
-        #     plt.plot(res)
-        #     plt.axvline(mid)
-        #     plt.savefig(f"{x_name}_{y_name}.pdf", format="pdf")
 
         return max(res), time_bias
     else:

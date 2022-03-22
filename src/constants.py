@@ -34,6 +34,7 @@ channel_names = [
     'FT8', 'FT9', 'Fp1', 'Fp2', 'Fpz', 'Fz', 'O1', 'O2', 'Oz', 'P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'PO3',
     'PO4', 'PO7', 'PO8', 'POz', 'Pz', 'T7', 'T8', 'TP7', 'TP8', 'VEO']
 
+channel_names_contains_z = ['CPz', 'Cz', 'Fpz', 'Fz', 'Oz', 'POz', 'Pz']
 '''
 AF表示前额叶和额叶的中间区域，
 C（Central）表示中央区，

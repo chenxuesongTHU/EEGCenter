@@ -12,9 +12,11 @@ from .base import BaseAnnotation
 import pandas as pd
 
 class csvAnnotation(BaseAnnotation):
-    def __init__(self, file_name):
+    def __init__(self, file_name, time_bias=0):
         BaseAnnotation.__init__(self, file_name)
         df = pd.read_csv(file_name)
+        df['startTime'] += time_bias
+        df['endTime'] += time_bias
         df['duration'] = df['endTime'] - df['startTime']
         self._anno = mne.Annotations(onset=df['startTime'],
                                duration=df['duration'],
